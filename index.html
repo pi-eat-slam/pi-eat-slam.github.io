@@ -18,7 +18,8 @@
         .abstract p{font-size:1.05em;line-height:1.75;opacity:0.92;text-align:justify}
         .demo{margin:60px 0;text-align:center}
         .demo h3{font-size:1.8em;margin-bottom:20px}
-        .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px;margin:60px 0}
+        .features{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin:60px 0}
+        @media(max-width:760px){.features{grid-template-columns:1fr}}
         .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);padding:30px;border-radius:20px;border:1px solid rgba(255,255,255,0.2)}
         .card h4{margin-bottom:15px;font-size:1.3em}
         .cta{text-align:center;margin:60px 0}
@@ -56,10 +57,6 @@
             <div class="card">
                 <h4>⚡ GE-KLT Edge Tracking</h4>
                 <p>Gradient-aware Edge-KLT tracking combines KLT with high-confidence Canny edges. A three-stage pipeline — distance filtering, dual-constraint (spatial + gradient-directional) matching, and residual rejection — keeps only reliable correspondences under severe thermal noise.</p>
-            </div>
-            <div class="card">
-                <h4>🌡️ Physics-Grounded 3DGS</h4>
-                <p>Thermal radiance is mapped with anisotropic 3D Gaussians and rendered through a physics-grounded pipeline. A pre-trained Atmospheric Transmission Field and Thermal Conduction Module suppress ghosting artifacts and sharpen blurred boundaries.</p>
             </div>
             <div class="card">
                 <h4>🔍 Edge-aware Optimization</h4>
