@@ -3,12 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PI-EAT-SLAM | Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</title>
-<meta name="description" content="PI-EAT-SLAM: the first thermal-depth 3D Gaussian Splatting SLAM framework. Physics-informed, edge-aware tracking and mapping for low-contrast, texture-sparse thermal imagery. IROS 2026.">
+<title>PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM (IROS 2026)</title>
+<meta name="description" content="PI-EAT-SLAM is the thermal-depth 3D Gaussian Splatting SLAM framework — physics-informed, edge-aware tracking and mapping for low-contrast, texture-sparse thermal imagery. IROS 2026.">
+<meta name="keywords" content="PI-EAT-SLAM, PI EAT SLAM, PIEATSLAM, thermal SLAM, thermal Gaussian Splatting, thermal Gaussian Splatting SLAM, 3D Gaussian Splatting SLAM, thermal-depth SLAM, edge-aware SLAM, GE-KLT, Gradient-aware Edge-KLT, Stefan-Boltzmann rescaling, thermal camera SLAM, infrared SLAM, 3DGS SLAM, IROS 2026, GIST, Pyojin Kim">
+<meta name="author" content="Junpyo Kim, Seonwook Yeom, Seonmo Yang, Jungil Ham, Hyeonji Shin, Changhyeon Kim, Hyeonbeom Lee, Pyojin Kim">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://pi-eat-slam.github.io/">
+
+<!-- To verify ownership in Google Search Console, paste your token below and uncomment:
+<meta name="google-site-verification" content="YOUR_VERIFICATION_TOKEN"> -->
+
+<!-- Open Graph -->
 <meta property="og:title" content="PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM">
-<meta property="og:description" content="The first thermal-depth 3D Gaussian Splatting SLAM framework — robust tracking and high-fidelity mapping in visually degraded thermal environments.">
-<meta property="og:image" content="images/intro_front_page.png">
+<meta property="og:description" content="The thermal-depth 3D Gaussian Splatting SLAM framework — robust tracking and high-fidelity mapping in visually degraded thermal environments. IROS 2026.">
+<meta property="og:image" content="https://pi-eat-slam.github.io/images/intro_front_page.png">
+<meta property="og:url" content="https://pi-eat-slam.github.io/">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="PI-EAT-SLAM">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM">
+<meta name="twitter:description" content="The thermal-depth 3D Gaussian Splatting SLAM framework. IROS 2026.">
+<meta name="twitter:image" content="https://pi-eat-slam.github.io/images/intro_front_page.png">
+
+<!-- Structured data for richer search results -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://pi-eat-slam.github.io/#website",
+      "url": "https://pi-eat-slam.github.io/",
+      "name": "PI-EAT-SLAM",
+      "alternateName": ["PI-EAT-SLAM", "Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM"]
+    },
+    {
+      "@type": "ScholarlyArticle",
+      "headline": "PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM",
+      "name": "PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM",
+      "abstract": "PI-EAT-SLAM is the thermal-depth 3D Gaussian Splatting SLAM framework. It exploits robust geometric edge features for reliable tracking and mapping in low-contrast, texture-sparse thermal imagery, using Stefan-Boltzmann rescaling, Gradient-aware Edge-KLT (GE-KLT) tracking, and an edge-aware smoothness loss.",
+      "author": [
+        {"@type": "Person", "name": "Junpyo Kim"},
+        {"@type": "Person", "name": "Seonwook Yeom"},
+        {"@type": "Person", "name": "Seonmo Yang"},
+        {"@type": "Person", "name": "Jungil Ham"},
+        {"@type": "Person", "name": "Hyeonji Shin"},
+        {"@type": "Person", "name": "Changhyeon Kim"},
+        {"@type": "Person", "name": "Hyeonbeom Lee"},
+        {"@type": "Person", "name": "Pyojin Kim"}
+      ],
+      "publisher": {"@type": "Organization", "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)"},
+      "datePublished": "2026",
+      "image": "https://pi-eat-slam.github.io/images/intro_front_page.png",
+      "url": "https://pi-eat-slam.github.io/",
+      "keywords": "thermal SLAM, 3D Gaussian Splatting, thermal-depth SLAM, edge-aware SLAM, GE-KLT, Stefan-Boltzmann rescaling"
+    }
+  ]
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -262,7 +316,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
   <div class="hero-tag"><span class="pulse"></span>IROS 2026 · Accepted</div>
   <h1>PI-EAT-SLAM</h1>
   <p class="subtitle">Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</p>
-  <p class="venue">The <b>first</b> thermal-depth 3D Gaussian Splatting SLAM framework</p>
+  <p class="venue">The thermal-depth 3D Gaussian Splatting SLAM framework</p>
 
   <p class="authors">
     Junpyo Kim<sup>1,&#42;</sup>, Seonwook Yeom<sup>1</sup>, Seonmo Yang<sup>1</sup>, Jungil Ham<sup>1</sup>,
@@ -468,7 +522,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       <table>
         <caption>Camera Tracking Accuracy <span>— ATE RMSE (m) on the Multi-spectral Dataset. <b class="best">Best</b> in color.</span></caption>
         <thead>
-          <tr><th>Sequence</th><th>ORB2 (RGB-D)</th><th>MonoGS</th><th>Thermal-D Odom</th><th>Ours</th></tr>
+          <tr><th>Sequence</th><th>ORB2 (RGB-D)</th><th>MonoGS (Thermal-D)</th><th>Thermal-D Odom</th><th>Ours</th></tr>
         </thead>
         <tbody>
           <tr><td>ds1-xyz-ic</td><td>Fail</td><td>0.0815</td><td>0.1151</td><td class="best">0.0553</td></tr>
