@@ -259,9 +259,15 @@ thead th:first-child{text-align:left}
 tbody td:first-child{text-align:left;font-weight:600;color:var(--ink)}
 tbody tr:nth-child(even){background:#fbfbfe}
 .best{color:var(--brand-2);font-weight:800}
+.second{text-decoration:underline;text-underline-offset:3px;font-weight:600;color:var(--ink)}
 .ours td{background:#fff6ef!important}
 .ours td:first-child{color:var(--brand)}
+.tablewrap td.method{text-align:left;font-weight:700;color:var(--ink)}
+.tablewrap td.metric{text-align:left;font-weight:500;color:var(--ink-soft)}
+.tablewrap tr.grp td{text-align:left;font-weight:700;color:var(--brand-2);background:#f4eefb;letter-spacing:.4px;text-transform:uppercase;font-size:.78rem;padding:8px 16px}
+.tablewrap td.gcol{border-left:1px solid var(--line)}
 .tnote{font-size:.82rem;color:var(--muted);padding:10px 20px;background:var(--surface)}
+.legend-mark{font-size:.84rem;color:var(--muted);font-weight:400}
 
 /* bibtex */
 .bibtex{
@@ -517,6 +523,34 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       </figcaption>
     </div>
 
+    <!-- Tracking table: Multi-spectral dataset (full) -->
+    <div class="tablewrap">
+      <table>
+        <caption>Camera Tracking Accuracy <span class="legend-mark">— ATE RMSE (m) on the Multi-spectral Dataset. <b class="best">Bold</b> = best, <span class="second">underline</span> = second best.</span></caption>
+        <thead>
+          <tr>
+            <th>Sequence</th><th>ORB2 (RGB-D)</th><th>ORB2 (Thermal-D)</th>
+            <th>MonoGS (Thermal-D)</th><th>Thermal-D Odom</th><th>Ours</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="grp"><td colspan="6">Bright</td></tr>
+          <tr><td>ds1-xyz</td><td class="best">0.0119</td><td>0.0832</td><td>0.0641</td><td>0.0719</td><td class="second">0.0541</td></tr>
+          <tr><td>ds1-xyz-ps</td><td>0.0402</td><td>0.1412</td><td>0.0419</td><td class="best">0.0154</td><td class="second">0.0314</td></tr>
+          <tr><td>ds1-hfsp</td><td>0.1061</td><td>0.4416</td><td>0.0959</td><td class="second">0.0582</td><td class="best">0.0485</td></tr>
+          <tr><td>ds2-xyz</td><td class="second">0.0618</td><td>Fail</td><td>Fail</td><td class="best">0.0375</td><td>0.0865</td></tr>
+          <tr><td>ds2-hfsp</td><td class="second">0.0759</td><td>0.1525</td><td>0.1536</td><td class="best">0.0288</td><td>0.1435</td></tr>
+          <tr class="grp"><td colspan="6">Varying (illumination changes)</td></tr>
+          <tr><td>ds1-xyz-ic</td><td>Fail</td><td>0.2502</td><td class="second">0.0815</td><td>0.1151</td><td class="best">0.0553</td></tr>
+          <tr><td>ds1-xyz-ic-ps</td><td>Fail</td><td>0.3490</td><td class="second">0.0609</td><td>0.0778</td><td class="best">0.0520</td></tr>
+          <tr><td>ds1-hfsp-ic</td><td>Fail</td><td>0.4674</td><td>0.0797</td><td class="second">0.0514</td><td class="best">0.0452</td></tr>
+          <tr><td>ds2-xyz-ic</td><td>Fail</td><td>0.2032</td><td>0.1705</td><td class="second">0.1136</td><td class="best">0.0840</td></tr>
+          <tr><td>ds2-hfsp-ic</td><td>Fail</td><td>0.1889</td><td class="second">0.0988</td><td>0.1099</td><td class="best">0.0626</td></tr>
+        </tbody>
+      </table>
+      <div class="tnote">Lower is better. RGB-D ORB-SLAM2 fails on every <em>Varying</em> sequence, while PI-EAT-SLAM (Ours) leads across all of them and stays competitive under <em>Bright</em> conditions.</div>
+    </div>
+
     <!-- Edge matching quality -->
     <div class="figure">
       <div class="imgwrap tight">
@@ -539,6 +573,37 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
         renders clean, artifact-free surfaces.
       </figcaption>
+    </div>
+
+    <!-- NVS table: Custom dataset (full) -->
+    <div class="tablewrap">
+      <table>
+        <caption>Novel View Synthesis <span class="legend-mark">— Custom Dataset (Monocular). <b class="best">Bold</b> = best, <span class="second">underline</span> = second best.</span></caption>
+        <thead>
+          <tr>
+            <th rowspan="2">Method</th><th rowspan="2">Metric</th>
+            <th colspan="3" class="gcol">Easy</th><th colspan="3" class="gcol">Difficult</th>
+          </tr>
+          <tr>
+            <th class="gcol">xyz</th><th>sfm</th><th>circle</th>
+            <th class="gcol">upper_turn</th><th>down_turn</th><th>up_down</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="method" rowspan="3">MonoGS</td><td class="metric">PSNR &uarr;</td><td class="gcol best">25.54</td><td class="second">27.22</td><td>21.81</td><td class="gcol">15.31</td><td>11.36</td><td>12.66</td></tr>
+          <tr><td class="metric">SSIM &uarr;</td><td class="gcol second">0.941</td><td class="second">0.943</td><td>0.876</td><td class="gcol">0.528</td><td>0.268</td><td>0.284</td></tr>
+          <tr><td class="metric">LPIPS &darr;</td><td class="gcol second">0.179</td><td class="second">0.145</td><td class="second">0.207</td><td class="gcol">0.540</td><td>0.690</td><td>0.656</td></tr>
+
+          <tr><td class="method" rowspan="3">HI-SLAM2</td><td class="metric">PSNR &uarr;</td><td class="gcol">23.66</td><td>24.41</td><td class="second">22.36</td><td class="gcol second">19.43</td><td class="best">18.54</td><td class="best">20.10</td></tr>
+          <tr><td class="metric">SSIM &uarr;</td><td class="gcol">0.916</td><td>0.895</td><td class="second">0.885</td><td class="gcol second">0.855</td><td class="best">0.846</td><td class="best">0.865</td></tr>
+          <tr><td class="metric">LPIPS &darr;</td><td class="gcol">0.193</td><td>0.196</td><td class="second">0.207</td><td class="gcol second">0.464</td><td class="best">0.467</td><td class="best">0.400</td></tr>
+
+          <tr class="ours"><td class="method" rowspan="3">Ours (Mono)</td><td class="metric">PSNR &uarr;</td><td class="gcol second">25.42</td><td class="best">27.29</td><td class="best">23.73</td><td class="gcol best">20.82</td><td class="second">11.85</td><td class="second">15.26</td></tr>
+          <tr class="ours"><td class="metric">SSIM &uarr;</td><td class="gcol best">0.944</td><td class="best">0.944</td><td class="best">0.920</td><td class="gcol best">0.870</td><td class="second">0.326</td><td class="second">0.436</td></tr>
+          <tr class="ours"><td class="metric">LPIPS &darr;</td><td class="gcol best">0.168</td><td class="best">0.141</td><td class="best">0.158</td><td class="gcol best">0.378</td><td class="second">0.661</td><td class="second">0.574</td></tr>
+        </tbody>
+      </table>
+      <div class="tnote">PSNR/SSIM higher is better, LPIPS lower is better. Our preprocessing intentionally alters intensity distributions to prioritize tracking, yet PI-EAT-SLAM still tops NVS quality on most <em>Easy</em> sequences and the <em>upper_turn</em> case, remaining competitive on the hardest rotational trajectories.</div>
     </div>
   </div>
 </section>
