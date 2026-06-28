@@ -1,76 +1,593 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>PI-EAT-SLAM</title>
-    <meta charset="utf-8">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:white;min-height:100vh;display:flex;flex-direction:column}
-        .hero{background:linear-gradient(135deg,#1e3a8a 0%,#06b6d4 50%,#10b981 100%);padding:80px 20px;text-align:center}
-        .hero h1{font-size:3em;margin-bottom:10px}
-        .hero h2{font-size:1.5em;opacity:0.9;margin-bottom:20px}
-        .accepted{display:inline-block;font-weight:800;font-size:1.6em;color:#fde047;text-shadow:0 2px 8px rgba(0,0,0,0.4);letter-spacing:0.5px}
-        .banner{text-align:center;padding:40px 20px 0}
-        .banner img{display:block;width:100%;max-width:520px;height:auto;margin:0 auto;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4)}
-        .container{max-width:1200px;margin:0 auto;padding:0 20px;flex:1}
-        .abstract{margin:60px auto;max-width:860px}
-        .abstract h3{font-size:1.8em;margin-bottom:20px;text-align:center}
-        .abstract p{font-size:1.05em;line-height:1.75;opacity:0.92;text-align:justify}
-        .demo{margin:60px 0;text-align:center}
-        .demo h3{font-size:1.8em;margin-bottom:20px}
-        .features{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin:60px 0}
-        @media(max-width:760px){.features{grid-template-columns:1fr}}
-        .card{background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);padding:30px;border-radius:20px;border:1px solid rgba(255,255,255,0.2)}
-        .card h4{margin-bottom:15px;font-size:1.3em}
-        .cta{text-align:center;margin:60px 0}
-        .btn{display:inline-block;padding:15px 40px;background:linear-gradient(45deg,#06b6d4,#1e3a8a);color:white;text-decoration:none;border-radius:50px;font-weight:600;font-size:1.1em;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
-        footer{padding:40px 20px;text-align:center;background:rgba(0,0,0,0.3);margin-top:auto}
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PI-EAT-SLAM | Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</title>
+<meta name="description" content="PI-EAT-SLAM: the first thermal-depth 3D Gaussian Splatting SLAM framework. Physics-informed, edge-aware tracking and mapping for low-contrast, texture-sparse thermal imagery. IROS 2026.">
+<meta property="og:title" content="PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM">
+<meta property="og:description" content="The first thermal-depth 3D Gaussian Splatting SLAM framework — robust tracking and high-fidelity mapping in visually degraded thermal environments.">
+<meta property="og:image" content="images/intro_front_page.png">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f6f7fb;
+  --surface:#ffffff;
+  --ink:#1b2233;
+  --ink-soft:#475069;
+  --muted:#6b7280;
+  --line:#e6e8f0;
+  --brand:#e8590c;        /* thermal orange */
+  --brand-2:#c1121f;      /* thermal red   */
+  --brand-3:#f9a825;      /* amber         */
+  --accent-cyan:#0e9bd6;  /* edge cyan     */
+  --navy:#0b1026;
+  --shadow:0 18px 50px -22px rgba(15,23,42,.45);
+  --shadow-soft:0 8px 28px -14px rgba(15,23,42,.30);
+  --radius:18px;
+  --ironbow:linear-gradient(120deg,#1a0b2e 0%,#46117a 24%,#a01a6e 46%,#d83a2b 66%,#f87c1b 82%,#ffd24a 100%);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:74px}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--ink);
+  line-height:1.65;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+a{color:var(--brand);text-decoration:none;transition:color .15s}
+a:hover{color:var(--brand-2)}
+img{max-width:100%;display:block}
+
+/* ---------- top nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.82);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{max-width:1080px;margin:0 auto;padding:0 24px;height:60px;
+  display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-weight:800;letter-spacing:.5px;font-size:1.02rem;color:var(--ink);display:flex;align-items:center;gap:8px}
+.nav-brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ironbow);box-shadow:0 0 12px rgba(248,124,27,.7)}
+.nav-links{display:flex;gap:26px;align-items:center}
+.nav-links a{color:var(--ink-soft);font-weight:500;font-size:.92rem}
+.nav-links a:hover{color:var(--brand)}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---------- hero ---------- */
+.hero{
+  position:relative;color:#fff;text-align:center;
+  padding:84px 24px 70px;
+  background:
+    radial-gradient(1200px 500px at 50% -10%,rgba(248,124,27,.28),transparent 60%),
+    radial-gradient(900px 500px at 85% 0%,rgba(160,26,110,.30),transparent 55%),
+    linear-gradient(160deg,#0a0e22 0%,#160a2e 45%,#2a0d33 100%);
+  overflow:hidden;
+}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(900px 360px at 50% 120%,rgba(255,210,74,.18),transparent 60%);
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.82rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
+  padding:7px 16px;border-radius:999px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
+  color:#ffd9b0;margin-bottom:26px;backdrop-filter:blur(6px);
+}
+.hero-tag .pulse{width:8px;height:8px;border-radius:50%;background:#ffd24a;box-shadow:0 0 0 0 rgba(255,210,74,.7);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,210,74,.6)}70%{box-shadow:0 0 0 10px rgba(255,210,74,0)}100%{box-shadow:0 0 0 0 rgba(255,210,74,0)}}
+.hero h1{
+  font-size:clamp(2.6rem,7vw,4.6rem);font-weight:900;letter-spacing:-1.5px;line-height:1;
+  margin-bottom:18px;
+  background:linear-gradient(95deg,#ffffff 0%,#ffd9b0 40%,#ff9d4d 70%,#ffce5a 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 6px 30px rgba(248,124,27,.25));
+}
+.hero .subtitle{
+  font-size:clamp(1.05rem,2.4vw,1.45rem);font-weight:500;color:#e7e3f5;
+  max-width:760px;margin:0 auto 14px;line-height:1.45;
+}
+.hero .venue{font-size:1rem;color:#c9c4e0;margin-bottom:8px}
+.hero .venue b{color:#ffd24a;font-weight:800;letter-spacing:.5px}
+.authors{color:#cdc8e6;font-size:1.02rem;margin:22px auto 4px;max-width:760px;font-weight:500}
+.affil{color:#9c98b8;font-size:.92rem;margin-bottom:30px}
+
+/* link buttons */
+.links{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:8px}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:12px 22px;border-radius:999px;font-weight:600;font-size:.98rem;
+  background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(8px);transition:transform .15s,background .2s,border-color .2s;
+}
+.btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4)}
+.btn.primary{background:linear-gradient(95deg,#f87c1b,#e8590c);border-color:transparent;box-shadow:0 12px 30px -10px rgba(248,124,27,.7)}
+.btn.primary:hover{background:linear-gradient(95deg,#ff8a2e,#f06407)}
+.btn.ghost{opacity:.62;cursor:default}
+.btn.ghost:hover{transform:none;background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22)}
+.btn svg{width:18px;height:18px;fill:currentColor}
+
+/* ---------- teaser ---------- */
+.teaser{max-width:1000px;margin:-38px auto 0;padding:0 24px;position:relative;z-index:5}
+.teaser figure{
+  background:var(--surface);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);border:1px solid var(--line);
+}
+.teaser img{width:100%}
+.cap{font-size:.9rem;color:var(--muted);padding:14px 20px;line-height:1.55;border-top:1px solid var(--line);background:var(--surface)}
+.cap b{color:var(--ink-soft)}
+.legend{display:inline-flex;gap:14px;flex-wrap:wrap;margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;color:var(--ink-soft)}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+section{padding:72px 0}
+.eyebrow{
+  display:block;text-align:center;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;font-size:.8rem;color:var(--brand);margin-bottom:10px;
+}
+h2.title{text-align:center;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.7px;color:var(--ink);margin-bottom:8px}
+.title-rule{width:62px;height:4px;border-radius:4px;background:var(--ironbow);margin:14px auto 0}
+
+/* abstract */
+.abstract-card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-soft);padding:38px 42px;margin-top:34px;position:relative;overflow:hidden;
+}
+.abstract-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ironbow)}
+.abstract-card p{font-size:1.08rem;line-height:1.85;color:var(--ink-soft);text-align:justify}
+.abstract-card strong{color:var(--ink)}
+.hl{background:linear-gradient(transparent 62%,rgba(249,168,37,.35) 0);font-weight:600;color:var(--ink);padding:0 2px}
+
+/* contribution chips */
+.contribs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+@media(max-width:760px){.contribs{grid-template-columns:1fr}}
+.chip{
+  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;
+  box-shadow:var(--shadow-soft);transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+.chip:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#f3c9a8}
+.chip .ic{font-size:1.5rem;margin-bottom:10px;display:block}
+.chip h4{font-size:1.06rem;color:var(--ink);margin-bottom:6px;font-weight:700}
+.chip p{font-size:.94rem;color:var(--muted);line-height:1.6}
+
+/* figure blocks */
+.figure{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow-soft);margin-top:30px;
+}
+.figure .pad{padding:22px 22px 6px}
+.figure img{margin:0 auto;cursor:zoom-in}
+.figure .imgwrap{padding:22px}
+.figure .imgwrap.tight{padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.grid2 .col{padding:22px}
+.grid2 .col + .col{border-left:1px solid var(--line)}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.grid2 .col + .col{border-left:none;border-top:1px solid var(--line)}}
+.subcap{font-size:.85rem;color:var(--muted);text-align:center;margin-top:10px;font-weight:500}
+
+/* method row: text + figure */
+.method-block{margin-top:44px}
+.method-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.method-num{
+  flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  font-weight:800;color:#fff;font-size:1.05rem;background:var(--ironbow);box-shadow:0 8px 20px -8px rgba(216,58,43,.6);
+}
+.method-head h3{font-size:1.32rem;font-weight:800;color:var(--ink);letter-spacing:-.3px}
+.method-block > p{color:var(--ink-soft);font-size:1.02rem;margin-left:56px;max-width:780px}
+.method-block .eq{
+  margin:14px 0 0 56px;display:inline-block;background:#fbf4ee;border:1px solid #f0d9c4;
+  border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:.98rem;color:var(--brand-2);
+}
+
+/* results */
+.alt{background:linear-gradient(180deg,#fff 0%,#fbf3ec 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+/* table */
+.tablewrap{margin-top:30px;overflow-x:auto;border-radius:var(--radius);box-shadow:var(--shadow-soft);border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;background:var(--surface);font-size:.94rem;min-width:560px}
+caption{caption-side:top;text-align:left;padding:16px 20px 0;font-weight:700;color:var(--ink)}
+caption span{font-weight:400;color:var(--muted);font-size:.88rem}
+th,td{padding:12px 16px;text-align:center;border-bottom:1px solid var(--line)}
+thead th{background:#1b1430;color:#fff;font-weight:600;letter-spacing:.3px}
+thead th:first-child{text-align:left}
+tbody td:first-child{text-align:left;font-weight:600;color:var(--ink)}
+tbody tr:nth-child(even){background:#fbfbfe}
+.best{color:var(--brand-2);font-weight:800}
+.ours td{background:#fff6ef!important}
+.ours td:first-child{color:var(--brand)}
+.tnote{font-size:.82rem;color:var(--muted);padding:10px 20px;background:var(--surface)}
+
+/* bibtex */
+.bibtex{
+  background:#0e1226;border-radius:var(--radius);padding:0;margin-top:30px;overflow:hidden;
+  box-shadow:var(--shadow);border:1px solid #20264a;
+}
+.bibtex-head{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;background:#161b3a;border-bottom:1px solid #20264a}
+.bibtex-head span{color:#cdd2f0;font-weight:600;font-size:.92rem;letter-spacing:.4px}
+.copybtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#e8e8ff;
+  padding:6px 14px;border-radius:8px;font-size:.84rem;cursor:pointer;font-weight:500;transition:background .2s}
+.copybtn:hover{background:rgba(255,255,255,.16)}
+.bibtex pre{padding:20px;color:#c7d0f5;font-family:'JetBrains Mono',monospace;font-size:.86rem;line-height:1.7;overflow-x:auto}
+.bibtex .k{color:#ff9d4d}.bibtex .v{color:#9fe6c4}
+
+/* footer */
+footer{background:var(--navy);color:#9c98b8;text-align:center;padding:46px 24px}
+footer .fbrand{color:#fff;font-weight:800;letter-spacing:.5px;font-size:1.1rem;margin-bottom:8px}
+footer a{color:#ffb27a}
+footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
+
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(8,10,22,.92);display:none;align-items:center;justify-content:center;
+  z-index:200;padding:30px;cursor:zoom-out}
+.lb.open{display:flex}
+.lb img{max-width:95vw;max-height:92vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+
+/* reveal animation */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
 </head>
 <body>
-    <div class="hero">
-        <h1>🔥 PI-EAT-SLAM</h1>
-        <h2>Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</h2>
-        <p><span class="accepted">🎉 IROS 2026 Accepted!</span></p>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="dot"></span>PI-EAT-SLAM</div>
+    <div class="nav-links">
+      <a href="#abstract">Abstract</a>
+      <a href="#overview">Overview</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#bibtex">BibTeX</a>
+      <a href="https://github.com/pi-eat-slam/pi-eat-slam.github.io">Code</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-tag"><span class="pulse"></span>IROS 2026 · Accepted</div>
+  <h1>PI-EAT-SLAM</h1>
+  <p class="subtitle">Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</p>
+  <p class="venue">The <b>first</b> thermal-depth 3D Gaussian Splatting SLAM framework</p>
+
+  <!-- TODO: replace with the de-anonymized author list & affiliation before public release -->
+  <p class="authors">Anonymous Authors</p>
+  <p class="affil">IROS 2026 Submission</p>
+
+  <div class="links">
+    <a class="btn ghost">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 2 4 4h-4zM8 13h8v2H8zm0 4h8v2H8z"/></svg>
+      Paper · soon
+    </a>
+    <a class="btn ghost">
+      <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zm9 3-6 4 6 4 6-4z"/></svg>
+      Video · soon
+    </a>
+    <a class="btn primary" href="https://github.com/pi-eat-slam/pi-eat-slam.github.io">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+      Code
+    </a>
+  </div>
+</header>
+
+<!-- TEASER -->
+<div class="teaser reveal">
+  <figure>
+    <img src="images/intro_front_page.png" alt="PI-EAT-SLAM thermal SLAM tracking and reconstruction overview">
+    <figcaption class="cap">
+      <b>PI-EAT-SLAM in action.</b> Real-time tracking and dense 3D Gaussian mapping in a low-contrast, texture-sparse thermal scene.
+      The background shows the reconstructed 3DGS map and recovered camera trajectory; the inset visualizes robust edge-point matching.
+      <span class="legend">
+        <span><i style="background:#e11d48"></i>rendered edge points</span>
+        <span><i style="background:#2563eb"></i>ground-truth edge points</span>
+        <span><i style="background:#0e9bd6"></i>residual vectors</span>
+      </span>
+    </figcaption>
+  </figure>
+</div>
+
+<!-- ABSTRACT -->
+<section id="abstract">
+  <div class="wrap reveal">
+    <span class="eyebrow">Abstract</span>
+    <h2 class="title">Edge-driven SLAM for the thermal domain</h2>
+    <div class="title-rule"></div>
+    <div class="abstract-card">
+      <p>
+        Conventional SLAM systems that rely on photometric alignment or point features often fail in the texture-sparse,
+        low-contrast imagery produced by thermal cameras. We present <strong>PI-EAT-SLAM</strong>
+        (Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM), the
+        <span class="hl">first thermal-depth 3D Gaussian Splatting SLAM framework</span>.
+        Instead of depending on raw photometric intensity, our approach exploits robust geometric <em>edge</em> features to achieve
+        reliable tracking and mapping in visually degraded environments. A <span class="hl">Stefan-Boltzmann law-based rescaling</span>
+        module physically enhances thermal contrast without amplifying noise; a multi-stage <span class="hl">Gradient-aware Edge-KLT (GE-KLT)</span>
+        tracker establishes highly reliable correspondences via dual-constraint outlier rejection; and an
+        <span class="hl">edge-aware smoothness loss</span> preserves sharp thermal boundaries during mapping. Extensive experiments on public
+        and custom datasets show that PI-EAT-SLAM achieves superior tracking accuracy and highly competitive novel-view synthesis
+        compared to state-of-the-art baselines.
+      </p>
     </div>
 
-    <div class="banner">
-        <img src="images/intro_front_page.png" alt="PI-EAT-SLAM thermal SLAM tracking and reconstruction">
+    <div class="contribs">
+      <div class="chip">
+        <span class="ic">🌡️</span>
+        <h4>Physics-informed contrast</h4>
+        <p>Stefan-Boltzmann radiance rescaling (L ∝ T⁴) restores true thermal contrast while suppressing sensor noise.</p>
+      </div>
+      <div class="chip">
+        <span class="ic">⚡</span>
+        <h4>Robust edge tracking</h4>
+        <p>GE-KLT couples KLT with Canny edges under spatial + gradient-directional dual-constraint outlier rejection.</p>
+      </div>
+      <div class="chip">
+        <span class="ic">🧊</span>
+        <h4>Edge-aware mapping</h4>
+        <p>An edge-aware smoothness loss enforces thermal equilibrium while preserving sharp boundaries in dense 3DGS.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW / PIPELINE -->
+<section id="overview" class="alt">
+  <div class="wrap reveal">
+    <span class="eyebrow">System Overview</span>
+    <h2 class="title">The PI-EAT-SLAM pipeline</h2>
+    <div class="title-rule"></div>
+    <div class="figure">
+      <div class="imgwrap">
+        <img src="images/method_main.png" alt="PI-EAT-SLAM full system pipeline">
+      </div>
+      <figcaption class="cap">
+        <b>End-to-end architecture.</b> <em>(Left)</em> Stefan-Boltzmann (S-B) rescaling enhances thermal contrast to enable reliable edge
+        extraction, which drives our Gradient-aware Edge-KLT tracking. <em>(Center)</em> A keyframing module manages co-visibility,
+        keyframe selection and Gaussian insertion/pruning, all coupled with Physics-Grounded rendering. <em>(Right)</em> An edge-aware
+        smoothness loss regularizes 3DGS mapping for high-fidelity dense reconstruction in thermally degraded scenes.
+      </figcaption>
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section id="method">
+  <div class="wrap reveal">
+    <span class="eyebrow">Method</span>
+    <h2 class="title">Three pillars, one robust system</h2>
+    <div class="title-rule"></div>
+
+    <!-- 1 S-B Rescaling -->
+    <div class="method-block">
+      <div class="method-head">
+        <div class="method-num">1</div>
+        <h3>Stefan-Boltzmann Thermal Rescaling</h3>
+      </div>
+      <p>
+        Raw 14/16-bit thermal data must be compressed to 8 bits for tracking. Conventional min-max scaling loses critical thermal
+        detail and contrast. We instead convert raw intensities to an absolute temperature map and apply the Stefan-Boltzmann law to
+        obtain surface radiance, which is proportional to the fourth power of temperature. This non-linear mapping amplifies subtle but
+        physically meaningful temperature variations far better than linear scaling — yielding sharper, less noisy 8-bit images. CLAHE and
+        bilateral filtering then sharpen local detail while attenuating noise.
+      </p>
+      <div class="eq">L(x, y) = ε · σ · T(x, y)⁴</div>
+
+      <div class="figure">
+        <div class="imgwrap tight">
+          <img src="images/method_thermal_enhancement_1.png" alt="Step-by-step thermal preprocessing results">
+        </div>
+        <figcaption class="cap">
+          <b>Step-by-step preprocessing.</b> (a) our S-B rescaling for global contrast enhancement, (b) S-B rescaling + CLAHE for local
+          detail visibility, and (c) the final output — S-B + CLAHE + bilateral filtering — preserving edge sharpness while reducing noise.
+        </figcaption>
+      </div>
+
+      <div class="figure">
+        <div class="imgwrap tight">
+          <img src="images/method_S-B_rescaling.png" alt="Edge-point matching comparison across rescaling methods">
+        </div>
+        <figcaption class="cap">
+          <b>Why physics matters for edges.</b> Edge-point matching across rescaling methods: (a) original thermal, (b) min-max scaling,
+          (c) FieldScale, and (d) our Stefan-Boltzmann rescaling. Our method produces the most reliable, consistent matches (red/blue dots
+          with cyan residual lines) by enhancing contrast while suppressing noise.
+        </figcaption>
+      </div>
     </div>
 
-    <div class="container">
-        <div class="abstract">
-            <h3>Abstract</h3>
-            <p>Conventional SLAM systems that rely on photometric alignment or point features often fail in the texture-sparse, low-contrast imagery produced by thermal cameras. We present <strong>PI-EAT-SLAM</strong> (Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM), the first thermal-depth 3D Gaussian Splatting SLAM framework. Instead of depending on raw photometric intensity, our approach exploits robust geometric <em>edge</em> features to achieve reliable tracking and mapping in visually degraded environments. A Stefan-Boltzmann law-based rescaling module physically enhances thermal contrast without amplifying noise; a multi-stage Gradient-aware Edge-KLT (GE-KLT) tracker establishes highly reliable correspondences via dual-constraint outlier rejection; and an edge-aware smoothness loss preserves sharp thermal boundaries during mapping. Extensive experiments on public and custom datasets show that PI-EAT-SLAM achieves superior tracking accuracy and highly competitive novel-view synthesis compared to state-of-the-art baselines.</p>
+    <!-- 2 GE-KLT -->
+    <div class="method-block">
+      <div class="method-head">
+        <div class="method-num">2</div>
+        <h3>Gradient-aware Edge-KLT (GE-KLT) Tracking</h3>
+      </div>
+      <p>
+        Pure photometric alignment is fragile in thermal imagery. Our multi-stage matching pipeline combines KLT tracking (local patch
+        appearance) with high-confidence Canny edges through three sequential outlier-rejection stages: (1) distance-based filtering,
+        (2) dual-constraint matching that requires <em>both</em> spatial proximity and gradient-directional agreement, and (3) residual-based
+        rejection. This strictly anchors matches to true physical boundaries, dramatically improving pose-estimation robustness in
+        contrast-limited scenes.
+      </p>
+      <div class="figure">
+        <div class="imgwrap" style="max-width:680px;margin:0 auto">
+          <img src="images/method_GE-KLT_residual.png" alt="Illustration of the GE-KLT residual">
         </div>
-
-        <div class="demo">
-            <h3>📹 Live Demo</h3>
-            <p>Demo video coming soon...</p>
-        </div>
-
-        <div class="features">
-            <div class="card">
-                <h4>🎛️ Stefan-Boltzmann Rescaling</h4>
-                <p>Physics-informed thermal preprocessing that maps raw 14/16-bit intensities to radiance via the Stefan-Boltzmann law (L ∝ T⁴). This non-linear rescaling boosts true thermal contrast while suppressing noise — a far cleaner foundation for edge extraction than linear min-max scaling.</p>
-            </div>
-            <div class="card">
-                <h4>⚡ GE-KLT Tracking</h4>
-                <p>Gradient-aware Edge-KLT tracking combines KLT with high-confidence Canny edges. A three-stage pipeline — distance filtering, dual-constraint (spatial + gradient-directional) matching, and residual rejection — keeps only reliable correspondences under severe thermal noise.</p>
-            </div>
-            <div class="card">
-                <h4>🔍 Edge-aware Smoothing</h4>
-                <p>A novel edge-aware smoothness loss regularizes mapping: it strongly smooths flat regions while strictly preserving sharp thermal discontinuities, enforcing thermal equilibrium for high-fidelity dense reconstruction.</p>
-            </div>
-        </div>
-
-        <div class="cta">
-            <a href="https://github.com/pi-eat-slam/pi-eat-slam.github.io" class="btn">⭐ GitHub Repository</a>
-        </div>
+        <figcaption class="cap">
+          <b>GE-KLT residual.</b> A rendered edge point (red) is KLT-tracked to a candidate (blue), then matched to the nearest valid
+          ground-truth Canny edge (green) under dual spatial + gradient constraints. The residual (magenta) couples spatial distance with
+          gradient angular difference — anchoring every match to a real edge.
+        </figcaption>
+      </div>
     </div>
 
-    <footer>
-        <p>© 2026 PI-EAT-SLAM</p>
-    </footer>
+    <!-- 3 Edge-aware smoothing -->
+    <div class="method-block">
+      <div class="method-head">
+        <div class="method-num">3</div>
+        <h3>Edge-aware Smoothness for Mapping</h3>
+      </div>
+      <p>
+        Standard smoothness losses oversmooth important geometric boundaries. Our edge-aware smoothness loss applies strong smoothing in
+        flat regions while strictly preserving sharp thermal discontinuities, enforcing natural thermal equilibrium. A sigmoid-weighted
+        edge term down-weights regularization exactly where strong radiance gradients occur, so the final 3DGS map stays crisp at object
+        boundaries and clean in homogeneous regions.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" class="alt">
+  <div class="wrap reveal">
+    <span class="eyebrow">Evaluation</span>
+    <h2 class="title">Superior tracking, competitive rendering</h2>
+    <div class="title-rule"></div>
+
+    <!-- Tracking trajectories -->
+    <div class="figure">
+      <div class="imgwrap">
+        <img src="images/eval_multi_traj.png" alt="Trajectory comparison on the multi-spectral dataset">
+      </div>
+      <figcaption class="cap">
+        <b>Trajectory accuracy.</b> Estimated trajectories on the multi-spectral dataset — <span style="color:#e11d48;font-weight:600">Ours</span>
+        vs. <span style="color:#2563eb;font-weight:600">MonoGS</span>, compared against <b>Ground Truth</b> (black). Red boxes highlight segments
+        where MonoGS drifts significantly, whereas PI-EAT-SLAM maintains accurate alignment.
+      </figcaption>
+    </div>
+
+    <!-- ATE table -->
+    <div class="tablewrap">
+      <table>
+        <caption>Camera Tracking Accuracy <span>— ATE RMSE (m) on the Multi-spectral Dataset. <b class="best">Best</b> in color.</span></caption>
+        <thead>
+          <tr><th>Sequence</th><th>ORB2 (RGB-D)</th><th>MonoGS</th><th>Thermal-D Odom</th><th>Ours</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ds1-xyz-ic</td><td>Fail</td><td>0.0815</td><td>0.1151</td><td class="best">0.0553</td></tr>
+          <tr><td>ds1-xyz-ic-ps</td><td>Fail</td><td>0.0609</td><td>0.0778</td><td class="best">0.0520</td></tr>
+          <tr><td>ds1-hfsp-ic</td><td>Fail</td><td>0.0797</td><td>0.0514</td><td class="best">0.0452</td></tr>
+          <tr><td>ds2-xyz-ic</td><td>Fail</td><td>0.1705</td><td>0.1136</td><td class="best">0.0840</td></tr>
+          <tr class="ours"><td>ds2-hfsp-ic</td><td>Fail</td><td>0.0988</td><td>0.1099</td><td class="best">0.0626</td></tr>
+        </tbody>
+      </table>
+      <div class="tnote">Under <em>Varying</em> illumination, RGB-D ORB-SLAM2 fails entirely while PI-EAT-SLAM consistently leads — confirming the robustness of explicit geometric edge matching over discrete patches or global photometric optimization.</div>
+    </div>
+
+    <!-- Edge matching quality -->
+    <div class="figure">
+      <div class="grid2">
+        <div class="col">
+          <img src="images/eval_e_div.png" alt="Edge-divergence residual vs GE-KLT">
+          <div class="subcap">(a) Edge-divergence residual &nbsp;vs.&nbsp; (b) our GE-KLT</div>
+        </div>
+        <div class="col">
+          <img src="images/eval_E_KLT.png" alt="GE-KLT vs E-KLT matching comparison">
+          <div class="subcap">GE-KLT (left) &nbsp;vs.&nbsp; E-KLT (right)</div>
+        </div>
+      </div>
+      <figcaption class="cap">
+        <b>Edge-matching quality.</b> Compared with the edge-divergence residual and plain E-KLT baselines, GE-KLT suppresses erroneous
+        matches and yields highly consistent residual vectors. By explicitly anchoring matches to valid ground-truth edge points (orange
+        boxes), it prevents tracked points from drifting away from real physical boundaries.
+      </figcaption>
+    </div>
+
+    <!-- Rendering / NVS -->
+    <div class="figure">
+      <div class="imgwrap tight">
+        <img src="images/eval_rendering_M09.png" alt="Novel view synthesis comparison">
+      </div>
+      <figcaption class="cap">
+        <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
+        produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
+        renders clean, artifact-free surfaces.
+      </figcaption>
+    </div>
+
+    <div class="figure">
+      <div class="imgwrap" style="max-width:680px;margin:0 auto">
+        <img src="images/eval_rendering_multispectral.png" alt="Rendering detail comparison on the multi-spectral dataset">
+      </div>
+      <figcaption class="cap">
+        <b>Structural fidelity.</b> Detail comparison on the multi-spectral dataset — our reconstruction recovers fine geometric structures
+        (red boxes) that baselines blur or collapse, confirming superior 3D structural reconstruction.
+      </figcaption>
+    </div>
+
+    <!-- NVS table -->
+    <div class="tablewrap">
+      <table>
+        <caption>Novel View Synthesis <span>— Custom Dataset (Monocular). <b class="best">Best</b> in color.</span></caption>
+        <thead>
+          <tr><th>Method</th><th>Metric</th><th>xyz</th><th>sfm</th><th>circle</th><th>upper_turn</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MonoGS</td><td>PSNR ↑</td><td class="best">25.54</td><td>27.22</td><td>21.81</td><td>15.31</td></tr>
+          <tr><td>HI-SLAM2</td><td>PSNR ↑</td><td>23.66</td><td>24.41</td><td>22.36</td><td>19.43</td></tr>
+          <tr class="ours"><td>Ours (Mono)</td><td>PSNR ↑</td><td>25.42</td><td class="best">27.29</td><td class="best">23.73</td><td class="best">20.82</td></tr>
+        </tbody>
+      </table>
+      <div class="tnote">Our preprocessing intentionally alters intensity distributions to prioritize tracking, yet still achieves top NVS quality on most sequences — and remains strong on <em>Difficult</em> rotational, feature-sparse trajectories where baselines degrade.</div>
+    </div>
+  </div>
+</section>
+
+<!-- BIBTEX -->
+<section id="bibtex">
+  <div class="wrap reveal">
+    <span class="eyebrow">Citation</span>
+    <h2 class="title">BibTeX</h2>
+    <div class="title-rule"></div>
+    <div class="bibtex">
+      <div class="bibtex-head">
+        <span>cite this work</span>
+        <button class="copybtn" id="copyBib">Copy</button>
+      </div>
+<pre id="bibText"><span class="k">@inproceedings</span>{pieatslam2026,
+  <span class="k">title</span>     = {<span class="v">PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</span>},
+  <span class="k">author</span>    = {<span class="v">Anonymous Authors</span>},
+  <span class="k">booktitle</span> = {<span class="v">IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</span>},
+  <span class="k">year</span>      = {<span class="v">2026</span>}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fbrand">🔥 PI-EAT-SLAM</div>
+  <p>Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM · IROS 2026</p>
+  <p class="small">Page built from the paper. &nbsp;·&nbsp; <a href="https://github.com/pi-eat-slam/pi-eat-slam.github.io">GitHub Repository</a></p>
+</footer>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb"><img id="lbImg" src="" alt="enlarged figure"></div>
+
+<script>
+// reveal on scroll
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// lightbox
+const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
+document.querySelectorAll('.figure img, .teaser img').forEach(img=>{
+  img.addEventListener('click',()=>{lbImg.src=img.src;lb.classList.add('open')});
+});
+lb.addEventListener('click',()=>lb.classList.remove('open'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('open')});
+
+// copy bibtex
+document.getElementById('copyBib').addEventListener('click',function(){
+  const t=document.getElementById('bibText').innerText;
+  navigator.clipboard.writeText(t).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1600)});
+});
+</script>
 </body>
 </html>
