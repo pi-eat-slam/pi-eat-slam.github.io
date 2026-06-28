@@ -95,8 +95,12 @@ img{max-width:100%;display:block}
 }
 .hero .venue{font-size:1rem;color:#c9c4e0;margin-bottom:8px}
 .hero .venue b{color:#ffd24a;font-weight:800;letter-spacing:.5px}
-.authors{color:#cdc8e6;font-size:1.02rem;margin:22px auto 4px;max-width:760px;font-weight:500}
-.affil{color:#9c98b8;font-size:.92rem;margin-bottom:30px}
+.authors{color:#e3e0f2;font-size:1.06rem;margin:24px auto 8px;max-width:820px;font-weight:500;line-height:1.7}
+.authors sup{color:#ffb27a;font-weight:700;font-size:.7em;padding-left:1px}
+.affil{color:#a7a3c2;font-size:.94rem;margin-bottom:4px}
+.affil sup{color:#ffb27a;font-weight:700}
+.affil.note{color:#8f8bac;font-size:.84rem;margin-bottom:30px}
+.affil.note span{white-space:nowrap}
 
 /* link buttons */
 .links{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:8px}
@@ -260,9 +264,16 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
   <p class="subtitle">Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</p>
   <p class="venue">The <b>first</b> thermal-depth 3D Gaussian Splatting SLAM framework</p>
 
-  <!-- TODO: replace with the de-anonymized author list & affiliation before public release -->
-  <p class="authors">Anonymous Authors</p>
-  <p class="affil">IROS 2026 Submission</p>
+  <p class="authors">
+    Junpyo Kim<sup>1,&#42;</sup>, Seonwook Yeom<sup>1</sup>, Seonmo Yang<sup>1</sup>, Jungil Ham<sup>1</sup>,
+    Hyeonji Shin<sup>1</sup>, Changhyeon Kim, Hyeonbeom Lee<sup>2</sup>, Pyojin Kim<sup>1,&dagger;</sup>
+  </p>
+  <p class="affil">
+    <sup>1</sup>&nbsp;Gwangju Institute of Science and Technology (GIST)
+    &nbsp;&nbsp;&nbsp; <sup>2</sup>&nbsp;Ajou University
+  </p>
+  <!-- Changhyeon Kim: affiliation intentionally omitted (to be added later) -->
+  <p class="affil note"><span>&#42;&nbsp;First author</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <span>&dagger;&nbsp;Corresponding author</span></p>
 
   <div class="links">
     <a class="btn ghost">
@@ -382,16 +393,6 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
 
       <div class="figure">
         <div class="imgwrap tight">
-          <img src="images/method_thermal_enhancement_1.png" alt="Step-by-step thermal preprocessing results">
-        </div>
-        <figcaption class="cap">
-          <b>Step-by-step preprocessing.</b> (a) our S-B rescaling for global contrast enhancement, (b) S-B rescaling + CLAHE for local
-          detail visibility, and (c) the final output — S-B + CLAHE + bilateral filtering — preserving edge sharpness while reducing noise.
-        </figcaption>
-      </div>
-
-      <div class="figure">
-        <div class="imgwrap tight">
           <img src="images/method_S-B_rescaling.png" alt="Edge-point matching comparison across rescaling methods">
         </div>
         <figcaption class="cap">
@@ -482,20 +483,13 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
 
     <!-- Edge matching quality -->
     <div class="figure">
-      <div class="grid2">
-        <div class="col">
-          <img src="images/eval_e_div.png" alt="Edge-divergence residual vs GE-KLT">
-          <div class="subcap">(a) Edge-divergence residual &nbsp;vs.&nbsp; (b) our GE-KLT</div>
-        </div>
-        <div class="col">
-          <img src="images/eval_E_KLT.png" alt="GE-KLT vs E-KLT matching comparison">
-          <div class="subcap">GE-KLT (left) &nbsp;vs.&nbsp; E-KLT (right)</div>
-        </div>
+      <div class="imgwrap tight">
+        <img src="images/eval_E_KLT.png" alt="GE-KLT vs E-KLT matching comparison">
       </div>
       <figcaption class="cap">
-        <b>Edge-matching quality.</b> Compared with the edge-divergence residual and plain E-KLT baselines, GE-KLT suppresses erroneous
-        matches and yields highly consistent residual vectors. By explicitly anchoring matches to valid ground-truth edge points (orange
-        boxes), it prevents tracked points from drifting away from real physical boundaries.
+        <b>Edge-matching quality.</b> GE-KLT (left) vs. plain E-KLT (right). By explicitly anchoring matches to valid ground-truth edge
+        points (orange boxes), GE-KLT suppresses erroneous matches and prevents tracked points from drifting away from real physical
+        boundaries — yielding highly consistent residual vectors.
       </figcaption>
     </div>
 
@@ -508,16 +502,6 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
         produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
         renders clean, artifact-free surfaces.
-      </figcaption>
-    </div>
-
-    <div class="figure">
-      <div class="imgwrap" style="max-width:680px;margin:0 auto">
-        <img src="images/eval_rendering_multispectral.png" alt="Rendering detail comparison on the multi-spectral dataset">
-      </div>
-      <figcaption class="cap">
-        <b>Structural fidelity.</b> Detail comparison on the multi-spectral dataset — our reconstruction recovers fine geometric structures
-        (red boxes) that baselines blur or collapse, confirming superior 3D structural reconstruction.
       </figcaption>
     </div>
 
@@ -552,7 +536,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       </div>
 <pre id="bibText"><span class="k">@inproceedings</span>{pieatslam2026,
   <span class="k">title</span>     = {<span class="v">PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</span>},
-  <span class="k">author</span>    = {<span class="v">Anonymous Authors</span>},
+  <span class="k">author</span>    = {<span class="v">Kim, Junpyo and Yeom, Seonwook and Yang, Seonmo and Ham, Jungil and Shin, Hyeonji and Kim, Changhyeon and Lee, Hyeonbeom and Kim, Pyojin</span>},
   <span class="k">booktitle</span> = {<span class="v">IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</span>},
   <span class="k">year</span>      = {<span class="v">2026</span>}
 }</pre>
