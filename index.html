@@ -517,24 +517,6 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       </figcaption>
     </div>
 
-    <!-- ATE table -->
-    <div class="tablewrap">
-      <table>
-        <caption>Camera Tracking Accuracy <span>— ATE RMSE (m) on the Multi-spectral Dataset. <b class="best">Best</b> in color.</span></caption>
-        <thead>
-          <tr><th>Sequence</th><th>ORB2 (RGB-D)</th><th>MonoGS (Thermal-D)</th><th>Thermal-D Odom</th><th>Ours</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>ds1-xyz-ic</td><td>Fail</td><td>0.0815</td><td>0.1151</td><td class="best">0.0553</td></tr>
-          <tr><td>ds1-xyz-ic-ps</td><td>Fail</td><td>0.0609</td><td>0.0778</td><td class="best">0.0520</td></tr>
-          <tr><td>ds1-hfsp-ic</td><td>Fail</td><td>0.0797</td><td>0.0514</td><td class="best">0.0452</td></tr>
-          <tr><td>ds2-xyz-ic</td><td>Fail</td><td>0.1705</td><td>0.1136</td><td class="best">0.0840</td></tr>
-          <tr class="ours"><td>ds2-hfsp-ic</td><td>Fail</td><td>0.0988</td><td>0.1099</td><td class="best">0.0626</td></tr>
-        </tbody>
-      </table>
-      <div class="tnote">Under <em>Varying</em> illumination, RGB-D ORB-SLAM2 fails entirely while PI-EAT-SLAM consistently leads — confirming the robustness of explicit geometric edge matching over discrete patches or global photometric optimization.</div>
-    </div>
-
     <!-- Edge matching quality -->
     <div class="figure">
       <div class="imgwrap tight">
@@ -557,22 +539,6 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
         renders clean, artifact-free surfaces.
       </figcaption>
-    </div>
-
-    <!-- NVS table -->
-    <div class="tablewrap">
-      <table>
-        <caption>Novel View Synthesis <span>— Custom Dataset (Monocular). <b class="best">Best</b> in color.</span></caption>
-        <thead>
-          <tr><th>Method</th><th>Metric</th><th>xyz</th><th>sfm</th><th>circle</th><th>upper_turn</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>MonoGS</td><td>PSNR ↑</td><td class="best">25.54</td><td>27.22</td><td>21.81</td><td>15.31</td></tr>
-          <tr><td>HI-SLAM2</td><td>PSNR ↑</td><td>23.66</td><td>24.41</td><td>22.36</td><td>19.43</td></tr>
-          <tr class="ours"><td>Ours (Mono)</td><td>PSNR ↑</td><td>25.42</td><td class="best">27.29</td><td class="best">23.73</td><td class="best">20.82</td></tr>
-        </tbody>
-      </table>
-      <div class="tnote">Our preprocessing intentionally alters intensity distributions to prioritize tracking, yet still achieves top NVS quality on most sequences — and remains strong on <em>Difficult</em> rotational, feature-sparse trajectories where baselines degrade.</div>
     </div>
   </div>
 </section>
