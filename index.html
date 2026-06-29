@@ -106,7 +106,8 @@ img{max-width:100%;display:block}
 }
 .nav-inner{max-width:1080px;margin:0 auto;padding:0 24px;height:60px;
   display:flex;align-items:center;justify-content:space-between}
-.nav-brand{font-weight:800;letter-spacing:.5px;font-size:1.02rem;color:var(--ink);display:flex;align-items:center;gap:8px}
+.nav-brand{font-weight:800;letter-spacing:.5px;font-size:1.02rem;color:var(--ink);display:flex;align-items:center;gap:8px;cursor:pointer;transition:opacity .15s}
+.nav-brand:hover{color:var(--ink);opacity:.7}
 .nav-brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ironbow);box-shadow:0 0 12px rgba(248,124,27,.7)}
 .nav-links{display:flex;gap:26px;align-items:center}
 .nav-links a{color:var(--ink-soft);font-weight:500;font-size:.92rem}
@@ -305,7 +306,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-inner">
-    <div class="nav-brand"><span class="dot"></span>PI-EAT-SLAM</div>
+    <a class="nav-brand" href="#top" aria-label="Back to top"><span class="dot"></span>PI-EAT-SLAM</a>
     <div class="nav-links">
       <a href="#abstract">Abstract</a>
       <a href="#overview">Overview</a>
@@ -318,7 +319,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
 </nav>
 
 <!-- HERO -->
-<header class="hero">
+<header class="hero" id="top">
   <div class="hero-tag"><span class="pulse"></span>IROS 2026 · Accepted</div>
   <h1>PI-EAT-SLAM</h1>
   <p class="subtitle">Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</p>
