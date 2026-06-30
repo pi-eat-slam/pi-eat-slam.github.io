@@ -509,7 +509,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         weight w<sub>edge</sub> ≈ 0 in flat regions (strong smoothing) and ≈ 1 near strong edges (boundaries preserved). The final mapping loss
         aggregates the photometric loss, our edge-aware smoothness loss, and isotropic regularization over keyframes k in the window W:
       </p>
-      <div class="eq center">L<sub>mapping</sub> = Σ<sub>k∈W</sub> ( λ<sub>pho</sub> L<sup>k</sup><sub>pho</sub> + λ<sub>e-smooth</sub> L<sup>k</sup><sub>e-smooth</sub> + λ<sub>iso</sub> L<sub>iso</sub> )</div>
+      <div class="eq center">L<sub>mapping</sub> = Σ<sub>k∈W</sub> ( λ<sub>pho</sub> L<sup>k</sup><sub>pho</sub> + λ<sub>e-smooth</sub> L<sup>k</sup><sub>e-smooth</sub> ) + λ<sub>iso</sub> L<sub>iso</sub></div>
     </div>
   </div>
 </section>
