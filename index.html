@@ -328,12 +328,12 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
 
   <p class="authors">
     Junpyo Kim<sup>1,&#42;</sup>, Seonwook Yeom<sup>1</sup>, Seonmo Yang<sup>1</sup>, Jungil Ham<sup>1</sup>,
-    Hyeonji Shin<sup>1</sup>, Changhyeon Kim<sup>3</sup>, Hyeonbeom Lee<sup>2</sup>, Pyojin Kim<sup>1,&dagger;</sup>
+    Hyeonji Shin<sup>1</sup>, Changhyeon Kim<sup>2</sup>, Hyeonbeom Lee<sup>3</sup>, Pyojin Kim<sup>1,&dagger;</sup>
   </p>
   <p class="affil">
     <sup>1</sup>&nbsp;Gwangju Institute of Science and Technology (GIST)
-    &nbsp;&nbsp;&nbsp; <sup>2</sup>&nbsp;Ajou University
-    &nbsp;&nbsp;&nbsp; <sup>3</sup>&nbsp;Holiday Robotics
+    &nbsp;&nbsp;&nbsp; <sup>2</sup>&nbsp;Holiday Robotics
+    &nbsp;&nbsp;&nbsp; <sup>3</sup>&nbsp;Ajou University
   </p>
   <p class="affil note"><span>&#42;&nbsp;First author</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <span>&dagger;&nbsp;Corresponding author</span></p>
 
@@ -533,6 +533,18 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       </figcaption>
     </div>
 
+    <!-- Edge matching quality -->
+    <div class="figure">
+      <div class="imgwrap tight">
+        <img src="images/eval_E_KLT.png" alt="GE-KLT vs E-KLT matching comparison">
+      </div>
+      <figcaption class="cap">
+        <b>Edge-matching quality.</b> GE-KLT (left) vs. plain E-KLT (right). By explicitly anchoring matches to valid ground-truth edge
+        points (orange boxes), GE-KLT suppresses erroneous matches and prevents tracked points from drifting away from real physical
+        boundaries — yielding highly consistent residual vectors.
+      </figcaption>
+    </div>
+
     <!-- Tracking table: Multi-spectral dataset (full) -->
     <div class="tablewrap">
       <table>
@@ -561,15 +573,15 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       <div class="tnote">Lower is better. RGB-D ORB-SLAM2 fails on every <em>Varying</em> sequence, while PI-EAT-SLAM (Ours) leads across all of them and stays competitive under <em>Bright</em> conditions.</div>
     </div>
 
-    <!-- Edge matching quality -->
+    <!-- Rendering / NVS (qualitative) -->
     <div class="figure">
       <div class="imgwrap tight">
-        <img src="images/eval_E_KLT.png" alt="GE-KLT vs E-KLT matching comparison">
+        <img src="images/eval_rendering_M09.png" alt="Novel view synthesis comparison">
       </div>
       <figcaption class="cap">
-        <b>Edge-matching quality.</b> GE-KLT (left) vs. plain E-KLT (right). By explicitly anchoring matches to valid ground-truth edge
-        points (orange boxes), GE-KLT suppresses erroneous matches and prevents tracked points from drifting away from real physical
-        boundaries — yielding highly consistent residual vectors.
+        <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
+        produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
+        renders clean, artifact-free surfaces.
       </figcaption>
     </div>
 
@@ -602,18 +614,6 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         </tbody>
       </table>
       <div class="tnote">PSNR/SSIM higher is better, LPIPS lower is better. Our preprocessing intentionally alters intensity distributions to prioritize tracking, yet PI-EAT-SLAM still tops NVS quality on most <em>Easy</em> sequences and the <em>upper_turn</em> case, remaining competitive on the hardest rotational trajectories.</div>
-    </div>
-
-    <!-- Rendering / NVS (qualitative) -->
-    <div class="figure">
-      <div class="imgwrap tight">
-        <img src="images/eval_rendering_M09.png" alt="Novel view synthesis comparison">
-      </div>
-      <figcaption class="cap">
-        <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
-        produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
-        renders clean, artifact-free surfaces.
-      </figcaption>
     </div>
   </div>
 </section>
