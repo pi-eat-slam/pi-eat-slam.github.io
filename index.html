@@ -245,6 +245,7 @@ h2.title{text-align:center;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;le
   margin:14px 0 0 56px;display:inline-block;background:#fbf4ee;border:1px solid #f0d9c4;
   border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:.98rem;color:var(--brand-2);
 }
+.method-block .eq.center{display:block;width:fit-content;margin:14px auto 0;text-align:center}
 
 /* results */
 .alt{background:linear-gradient(180deg,#fff 0%,#fbf3ec 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -327,13 +328,13 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
 
   <p class="authors">
     Junpyo Kim<sup>1,&#42;</sup>, Seonwook Yeom<sup>1</sup>, Seonmo Yang<sup>1</sup>, Jungil Ham<sup>1</sup>,
-    Hyeonji Shin<sup>1</sup>, Changhyeon Kim, Hyeonbeom Lee<sup>2</sup>, Pyojin Kim<sup>1,&dagger;</sup>
+    Hyeonji Shin<sup>1</sup>, Changhyeon Kim<sup>3</sup>, Hyeonbeom Lee<sup>2</sup>, Pyojin Kim<sup>1,&dagger;</sup>
   </p>
   <p class="affil">
     <sup>1</sup>&nbsp;Gwangju Institute of Science and Technology (GIST)
     &nbsp;&nbsp;&nbsp; <sup>2</sup>&nbsp;Ajou University
+    &nbsp;&nbsp;&nbsp; <sup>3</sup>&nbsp;Holiday Robotics
   </p>
-  <!-- Changhyeon Kim: affiliation intentionally omitted (to be added later) -->
   <p class="affil note"><span>&#42;&nbsp;First author</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <span>&dagger;&nbsp;Corresponding author</span></p>
 
   <div class="links">
@@ -399,7 +400,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       <div class="chip">
         <span class="ic">⚡</span>
         <h4>Robust edge tracking</h4>
-        <p>GE-KLT couples KLT with Canny edges under spatial + gradient-directional dual-constraint outlier rejection.</p>
+        <p>GE-KLT couples KLT tracking with nearest-neighbor matching under spatial + gradient-directional dual-constraint outlier rejection.</p>
       </div>
       <div class="chip">
         <span class="ic">🧊</span>
@@ -450,7 +451,7 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         physically meaningful temperature variations far better than linear scaling — yielding sharper, less noisy 8-bit images. CLAHE and
         bilateral filtering then sharpen local detail while attenuating noise.
       </p>
-      <div class="eq">L(x, y) = ε · σ · T(x, y)⁴</div>
+      <div class="eq center">L(x, y) = ε · σ · T(x, y)⁴</div>
 
       <div class="figure">
         <div class="imgwrap tight">
@@ -501,6 +502,14 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         edge term down-weights regularization exactly where strong radiance gradients occur, so the final 3DGS map stays crisp at object
         boundaries and clean in homogeneous regions.
       </p>
+      <div class="eq center">L<sub>e-smooth</sub> = (1 / 4M) · Σ<sub>i,j</sub> ( |R<sub>i+1,j</sub> − R<sub>i,j</sub>| + |R<sub>i,j+1</sub> − R<sub>i,j</sub>| ) · (1 − w<sub>edge</sub>(i, j))</div>
+      <div class="eq center">w<sub>edge</sub>(i, j) = σ( α(|∇R<sub>i,j</sub>| − β) ),&nbsp;&nbsp; σ(x) = 1 / (1 + e<sup>−x</sup>),&nbsp;&nbsp; α = 8,&nbsp; β = 0.1</div>
+      <p style="margin-top:18px">
+        Here R<sub>i,j</sub> is the rendered thermal radiance at pixel (i, j) after rescaling and M is the total pixel count; the sigmoid edge
+        weight w<sub>edge</sub> ≈ 0 in flat regions (strong smoothing) and ≈ 1 near strong edges (boundaries preserved). The final mapping loss
+        aggregates the photometric loss, our edge-aware smoothness loss, and isotropic regularization over keyframes k in the window W:
+      </p>
+      <div class="eq center">L<sub>mapping</sub> = Σ<sub>k∈W</sub> ( λ<sub>pho</sub> L<sup>k</sup><sub>pho</sub> + λ<sub>e-smooth</sub> L<sup>k</sup><sub>e-smooth</sub> + λ<sub>iso</sub> L<sub>iso</sub> )</div>
     </div>
   </div>
 </section>
@@ -564,18 +573,6 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
       </figcaption>
     </div>
 
-    <!-- Rendering / NVS -->
-    <div class="figure">
-      <div class="imgwrap tight">
-        <img src="images/eval_rendering_M09.png" alt="Novel view synthesis comparison">
-      </div>
-      <figcaption class="cap">
-        <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
-        produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
-        renders clean, artifact-free surfaces.
-      </figcaption>
-    </div>
-
     <!-- NVS table: Custom dataset (full) -->
     <div class="tablewrap">
       <table>
@@ -605,6 +602,18 @@ footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
         </tbody>
       </table>
       <div class="tnote">PSNR/SSIM higher is better, LPIPS lower is better. Our preprocessing intentionally alters intensity distributions to prioritize tracking, yet PI-EAT-SLAM still tops NVS quality on most <em>Easy</em> sequences and the <em>upper_turn</em> case, remaining competitive on the hardest rotational trajectories.</div>
+    </div>
+
+    <!-- Rendering / NVS (qualitative) -->
+    <div class="figure">
+      <div class="imgwrap tight">
+        <img src="images/eval_rendering_M09.png" alt="Novel view synthesis comparison">
+      </div>
+      <figcaption class="cap">
+        <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
+        produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
+        renders clean, artifact-free surfaces.
+      </figcaption>
     </div>
   </div>
 </section>
