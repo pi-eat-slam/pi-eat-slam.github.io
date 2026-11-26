@@ -168,16 +168,6 @@ button{font:inherit;color:inherit}
 .btn.primary{background:linear-gradient(95deg,#ff7a1a,#ff3d5a);border-color:transparent;box-shadow:0 14px 34px -12px rgba(255,90,40,.8)}
 .btn svg{width:18px;height:18px;fill:currentColor}
 
-/* ---------- stats ---------- */
-.stats{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.stat{background:linear-gradient(180deg,var(--surface),var(--bg-2));border:1px solid var(--line);border-radius:16px;padding:22px 20px;position:relative;overflow:hidden}
-.stat::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--ironbow);opacity:.8}
-.stat .num{font-size:2.6rem;font-weight:900;letter-spacing:-1.5px;line-height:1;background:linear-gradient(95deg,#ffd24a,#ff7a1a 60%,#ff3d5a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
-.stat .lbl{margin-top:10px;font-size:.9rem;color:var(--ink-soft);line-height:1.45}
-.stat .src{margin-top:8px;font-size:.74rem;color:var(--muted);font-family:var(--mono)}
-@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.stats{grid-template-columns:1fr}}
-
 /* ---------- layout ---------- */
 .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
 section{padding:96px 0;position:relative}
@@ -348,9 +338,6 @@ p.body{color:var(--ink-soft);max-width:820px}
 .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 36px}
 @media(max-width:860px){.cgrid{grid-template-columns:1fr}}
 @media(max-width:480px){.crow{grid-template-columns:104px 1fr 56px}}
-#ablChart .crow{grid-template-columns:150px 1fr 112px}
-#rtChart .crow{grid-template-columns:160px 1fr 70px}
-@media(max-width:480px){#ablChart .crow{grid-template-columns:104px 1fr 100px}#rtChart .crow{grid-template-columns:120px 1fr 60px}}
 .chart-note{font-size:.8rem;color:var(--muted);padding:0 18px 16px}
 .tip{position:fixed;z-index:300;pointer-events:none;background:#0c0e1c;border:1px solid var(--line-2);color:var(--ink);font-size:.8rem;padding:7px 10px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transition:opacity .12s;max-width:260px}
 .tip b{font-family:var(--mono)}
@@ -415,7 +402,6 @@ footer p+p{margin-top:6px}
       <a href="#pipeline">Pipeline</a>
       <a href="#method">Method</a>
       <a href="#results">Results</a>
-      <a href="#ablation">Ablation</a>
       <a href="#citation">Citation</a>
     </div>
     <div class="nav-cta">
@@ -481,14 +467,6 @@ footer p+p{margin-top:6px}
     </div>
   </div>
 </header>
-
-<!-- STATS -->
-<div class="stats reveal" aria-label="Key results">
-  <div class="stat"><div class="num">1st</div><div class="lbl">thermal-depth 3D Gaussian Splatting SLAM framework</div><div class="src">contribution</div></div>
-  <div class="stat"><div class="num" data-count="5" data-suffix=" / 5">5 / 5</div><div class="lbl">illumination-varying sequences where we have the lowest ATE</div><div class="src">Table I · Multi-spectral</div></div>
-  <div class="stat"><div class="num" data-count="39" data-prefix="−" data-suffix="%">−39%</div><div class="lbl">mean ATE vs. MonoGS over the five varying-illumination sequences</div><div class="src">Table I · 0.060 vs 0.099 m</div></div>
-  <div class="stat"><div class="num" data-count="36" data-prefix="−" data-suffix="%">−36%</div><div class="lbl">lower mean ATE with GE-KLT tracking than without it (ablation)</div><div class="src">Table V · 0.085 → 0.054 m</div></div>
-</div>
 
 <!-- OVERVIEW -->
 <section id="overview">
@@ -857,39 +835,8 @@ footer p+p{margin-top:6px}
   </div>
 </section>
 
-<!-- ABLATION -->
-<section id="ablation" class="band">
-  <div class="wrap">
-    <div class="reveal">
-      <span class="eyebrow">Ablation & runtime</span>
-      <h2 class="title">Every component <em>pulls its weight</em></h2>
-      <p class="intro">Removing any component increases tracking error. Removing GE-KLT hurts most.</p>
-    </div>
-    <div class="grid-2 wide-left reveal" style="margin-top:28px;align-items:start">
-      <div class="card">
-        <div class="toolbar">
-          <span class="lbl">Table V · ATE RMSE (m) ↓</span>
-          <div class="seg" data-group="abl">
-            <button aria-pressed="true" data-col="3">Average</button>
-            <button aria-pressed="false" data-col="0">ds1-xyz-ps</button>
-            <button aria-pressed="false" data-col="1">ds1-hfsp</button>
-            <button aria-pressed="false" data-col="2">ds2-xyz-ic</button>
-          </div>
-        </div>
-        <div class="chart" id="ablChart"></div>
-        <p class="chart-note">The percentage is the error increase relative to the full system. Sequences were chosen for varied trajectories (xyz, hfsp), a person in view (ps) and aggressive illumination changes (ic).</p>
-      </div>
-      <div class="card">
-        <div class="toolbar"><span class="lbl">Runtime per frame · RTX 3060</span><span class="badge">≈ 1540 ms · 0.65 FPS</span></div>
-        <div class="chart" id="rtChart"></div>
-        <p class="chart-note">Average processing time per component (Sec. V-E). Future work: loop closure for large-scale consistency and real-time onboard execution.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- CITATION -->
-<section id="citation">
+<section id="citation" class="band">
   <div class="wrap reveal">
     <span class="eyebrow">Citation</span>
     <h2 class="title">BibTeX</h2>
@@ -921,28 +868,18 @@ footer p+p{margin-top:6px}
 'use strict';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- math ---------- */
 document.addEventListener('DOMContentLoaded', () => {
   if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false}], throwOnError:false});
 });
 
-/* ---------- reveal + count-up ---------- */
+/* ---------- reveal ---------- */
 const io = new IntersectionObserver(es => es.forEach(e => {
   if (!e.isIntersecting) return;
   e.target.classList.add('in'); io.unobserve(e.target);
-  $$('[data-count]', e.target).forEach(countUp);
 }), {threshold:.12});
 $$('.reveal').forEach(el => io.observe(el));
-function countUp(el){
-  const end = +el.dataset.count, pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
-  if (reduce) return;
-  const t0 = performance.now(), dur = 1100;
-  const step = t => { const k = Math.min(1,(t-t0)/dur), v = Math.round(end*(1-Math.pow(1-k,3)));
-    el.textContent = pre + v + suf; if (k<1) requestAnimationFrame(step); };
-  requestAnimationFrame(step);
-}
 
 /* ---------- nav progress + active link ---------- */
 const prog = $('#progress'), links = $$('.nav-links a');
@@ -1147,10 +1084,6 @@ const T4 = {groups:[['Easy',['xyz','sfm','circle']],['Difficult',['upper turn','
     ['HI-SLAM2',{PSNR:[23.66,24.41,22.36,19.43,18.54,20.10],SSIM:[.916,.895,.885,.855,.846,.865],LPIPS:[.193,.196,.207,.464,.467,.400]}],
     ['Ours (Mono)',{PSNR:[25.42,27.29,23.73,20.82,11.85,15.26],SSIM:[.944,.944,.920,.870,.326,.436],LPIPS:[.168,.141,.158,.378,.661,.574]}]],
   second:true};
-const T5 = {cols:['ds1-xyz-ps','ds1-hfsp','ds2-xyz-ic','Avg.'], rows:[
-  ['w/o S-B rescaling',[.0431,.0653,.0861,.0648]],['w/o GE-KLT',[.0463,.0848,.1236,.0849]],['w/o ATF+TCM',[.0426,.0768,.0865,.0686]],
-  ['w/o e-smoothing',[.0436,.0611,.0893,.0647]],['Ours (full)',[.0314,.0485,.0840,.0540]]]};
-const RT = [['Thermal preprocessing',303.20],['GE-KLT tracking',742.42],['ATF + TCM',28.52],['Edge-aware smoothing',98.41],['GS mapping',367.82]];
 
 /* ranking helper: returns {best:set, second:set} of indices; lower=true for errors */
 function rank(vals, lower){
@@ -1223,24 +1156,6 @@ function drawT1(cond){
     : '★ = lowest ATE. Under stable lighting, Ours is best on ds1-hfsp and competitive elsewhere. MonoGS and ORB-SLAM2 (Thermal-D) fail on the dark ds2-xyz.';
 }
 seg('t1', b => drawT1(b.dataset.cond)); drawT1('Varying');
-
-function drawAbl(ci){
-  const box = $('#ablChart'); box.innerHTML = '';
-  const full = T5.rows[T5.rows.length-1][1][ci], max = Math.max(...T5.rows.map(r=>r[1][ci]));
-  const vals = T5.rows.map(r=>r[1][ci]); const r = rank(vals, true);
-  T5.rows.forEach(([n, v], i) => {
-    const x = v[ci], ours = i===T5.rows.length-1, inc = (x/full-1)*100;
-    box.appendChild(barRow(n, x, max, {d:4, unit:' m', ours, best:r(i)==='best',
-      extra: ours ? '' : `<br>+${inc.toFixed(0)}% vs. full system`}));
-    if (!ours){ const last = box.lastChild; last.querySelector('.v').innerHTML = `${x.toFixed(4)} <span style="color:#ff8a9a;font-size:.72rem">+${inc.toFixed(0)}%</span>`; }
-  });
-}
-seg('abl', b => drawAbl(+b.dataset.col)); drawAbl(3);
-
-(function drawRT(){
-  const box = $('#rtChart'), max = Math.max(...RT.map(r=>r[1])), tot = RT.reduce((a,r)=>a+r[1],0);
-  RT.forEach(([n, v]) => box.appendChild(barRow(n, v, max, {d:0, unit:' ms', label: v.toFixed(0)+' ms', extra:`<br>${(v/tot*100).toFixed(1)}% of frame time`})));
-})();
 
 /* ---------- copy bibtex ---------- */
 $('#copyBib').addEventListener('click', function(){
