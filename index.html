@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM (IROS 2026)</title>
-<meta name="description" content="PI-EAT-SLAM is the thermal-depth 3D Gaussian Splatting SLAM framework — physics-informed, edge-aware tracking and mapping for low-contrast, texture-sparse thermal imagery. IROS 2026.">
+<meta name="description" content="PI-EAT-SLAM is the first thermal-depth 3D Gaussian Splatting SLAM framework — Stefan-Boltzmann rescaling, Gradient-aware Edge-KLT tracking and edge-aware smoothness for low-contrast, texture-sparse thermal imagery. IROS 2026.">
 <meta name="keywords" content="PI-EAT-SLAM, PI EAT SLAM, PIEATSLAM, thermal SLAM, thermal Gaussian Splatting, thermal Gaussian Splatting SLAM, 3D Gaussian Splatting SLAM, thermal-depth SLAM, edge-aware SLAM, GE-KLT, Gradient-aware Edge-KLT, Stefan-Boltzmann rescaling, thermal camera SLAM, infrared SLAM, 3DGS SLAM, IROS 2026, GIST, Pyojin Kim">
 <meta name="author" content="Junpyo Kim, Seonwook Yeom, Seonmo Yang, Jungil Ham, Hyeonji Shin, Changhyeon Kim, Hyeonbeom Lee, Pyojin Kim">
 <meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#07080f">
 <link rel="canonical" href="https://pi-eat-slam.github.io/">
 
 <!-- Google Search Console ownership verification -->
@@ -15,7 +16,7 @@
 
 <!-- Open Graph -->
 <meta property="og:title" content="PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM">
-<meta property="og:description" content="The thermal-depth 3D Gaussian Splatting SLAM framework — robust tracking and high-fidelity mapping in visually degraded thermal environments. IROS 2026.">
+<meta property="og:description" content="The first thermal-depth 3D Gaussian Splatting SLAM framework — robust tracking and high-fidelity mapping in visually degraded thermal environments. IROS 2026.">
 <meta property="og:image" content="https://pi-eat-slam.github.io/images/intro_front_page.png">
 <meta property="og:url" content="https://pi-eat-slam.github.io/">
 <meta property="og:type" content="website">
@@ -24,7 +25,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM">
-<meta name="twitter:description" content="The thermal-depth 3D Gaussian Splatting SLAM framework. IROS 2026.">
+<meta name="twitter:description" content="The first thermal-depth 3D Gaussian Splatting SLAM framework. IROS 2026.">
 <meta name="twitter:image" content="https://pi-eat-slam.github.io/images/intro_front_page.png">
 
 <!-- Structured data for richer search results -->
@@ -43,7 +44,7 @@
       "@type": "ScholarlyArticle",
       "headline": "PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM",
       "name": "PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM",
-      "abstract": "PI-EAT-SLAM is the thermal-depth 3D Gaussian Splatting SLAM framework. It exploits robust geometric edge features for reliable tracking and mapping in low-contrast, texture-sparse thermal imagery, using Stefan-Boltzmann rescaling, Gradient-aware Edge-KLT (GE-KLT) tracking, and an edge-aware smoothness loss.",
+      "abstract": "PI-EAT-SLAM is the first thermal-depth 3D Gaussian Splatting SLAM framework. It exploits robust geometric edge features for reliable tracking and mapping in low-contrast, texture-sparse thermal imagery, using Stefan-Boltzmann rescaling, Gradient-aware Edge-KLT (GE-KLT) tracking, and an edge-aware smoothness loss.",
       "author": [
         {"@type": "Person", "name": "Junpyo Kim"},
         {"@type": "Person", "name": "Seonwook Yeom"},
@@ -56,6 +57,7 @@
       ],
       "publisher": {"@type": "Organization", "name": "IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)"},
       "datePublished": "2026",
+      "pagination": "6729-6736",
       "image": "https://pi-eat-slam.github.io/images/intro_front_page.png",
       "url": "https://pi-eat-slam.github.io/",
       "keywords": "thermal SLAM, 3D Gaussian Splatting, thermal-depth SLAM, edge-aware SLAM, GE-KLT, Stefan-Boltzmann rescaling"
@@ -66,607 +68,1185 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
 <style>
 :root{
-  --bg:#f6f7fb;
-  --surface:#ffffff;
-  --ink:#1b2233;
-  --ink-soft:#475069;
-  --muted:#6b7280;
-  --line:#e6e8f0;
-  --brand:#e8590c;        /* thermal orange */
-  --brand-2:#c1121f;      /* thermal red   */
-  --brand-3:#f9a825;      /* amber         */
-  --accent-cyan:#0e9bd6;  /* edge cyan     */
-  --navy:#0b1026;
-  --shadow:0 18px 50px -22px rgba(15,23,42,.45);
-  --shadow-soft:0 8px 28px -14px rgba(15,23,42,.30);
+  color-scheme:dark;
+  --bg:#07080f;
+  --bg-2:#0b0d19;
+  --surface:#11142a;
+  --surface-2:#171b36;
+  --line:rgba(255,255,255,.09);
+  --line-2:rgba(255,255,255,.16);
+  --ink:#f1f2fa;
+  --ink-soft:#c3c6dc;
+  --muted:#8d91ad;
+  --hot:#ff7a1a;
+  --hot-2:#ff3d5a;
+  --amber:#ffc94a;
+  --cyan:#3dd6ff;
+  --edge-red:#ff4d5e;
+  --edge-blue:#4d7dff;
+  --bar:#5b6182;
+  --ironbow:linear-gradient(100deg,#46117a 0%,#a01a6e 28%,#e0352b 55%,#ff7a1a 78%,#ffd24a 100%);
   --radius:18px;
-  --ironbow:linear-gradient(120deg,#1a0b2e 0%,#46117a 24%,#a01a6e 46%,#d83a2b 66%,#f87c1b 82%,#ffd24a 100%);
+  --shadow:0 30px 80px -30px rgba(0,0,0,.8);
+  --mono:'JetBrains Mono',ui-monospace,monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:74px}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
 body{
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  background:var(--bg);color:var(--ink);
-  line-height:1.65;-webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  background:var(--bg);color:var(--ink);line-height:1.65;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
-a{color:var(--brand);text-decoration:none;transition:color .15s}
-a:hover{color:var(--brand-2)}
-img{max-width:100%;display:block}
+a{color:var(--hot);text-decoration:none}
+a:hover{color:var(--amber)}
+img{max-width:100%;height:auto;display:block}
+button{font:inherit;color:inherit}
+::selection{background:rgba(255,122,26,.35)}
 
-/* ---------- top nav ---------- */
-.nav{
-  position:sticky;top:0;z-index:60;
-  background:rgba(255,255,255,.82);backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--line);
-}
-.nav-inner{max-width:1080px;margin:0 auto;padding:0 24px;height:60px;
-  display:flex;align-items:center;justify-content:space-between}
-.nav-brand{font-weight:800;letter-spacing:.5px;font-size:1.02rem;color:var(--ink);display:flex;align-items:center;gap:8px;cursor:pointer;transition:opacity .15s}
-.nav-brand:hover{color:var(--ink);opacity:.7}
-.nav-brand .dot{width:10px;height:10px;border-radius:50%;background:var(--ironbow);box-shadow:0 0 12px rgba(248,124,27,.7)}
-.nav-links{display:flex;gap:26px;align-items:center}
-.nav-links a{color:var(--ink-soft);font-weight:500;font-size:.92rem}
-.nav-links a:hover{color:var(--brand)}
-@media(max-width:720px){.nav-links{display:none}}
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:80;background:rgba(7,8,15,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:1180px;margin:0 auto;padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.4px;color:var(--ink)}
+.brand:hover{color:var(--ink)}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:var(--ironbow);box-shadow:0 0 14px rgba(255,122,26,.8)}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-links a{color:var(--muted);font-weight:500;font-size:.9rem;padding:7px 12px;border-radius:999px;transition:color .15s,background .15s}
+.nav-links a:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.nav-links a.active{color:var(--ink);background:rgba(255,122,26,.16)}
+.nav-cta{display:flex;gap:8px}
+.nav-cta a{font-size:.86rem;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid var(--line-2);color:var(--ink)}
+.nav-cta a:hover{border-color:var(--hot);color:var(--ink)}
+.progress{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--ironbow)}
+@media(max-width:900px){.nav-links{display:none}}
 
 /* ---------- hero ---------- */
-.hero{
-  position:relative;color:#fff;text-align:center;
-  padding:84px 24px 70px;
+.hero{position:relative;padding:28px 20px 70px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:120%;pointer-events:none;
   background:
-    radial-gradient(1200px 500px at 50% -10%,rgba(248,124,27,.28),transparent 60%),
-    radial-gradient(900px 500px at 85% 0%,rgba(160,26,110,.30),transparent 55%),
-    linear-gradient(160deg,#0a0e22 0%,#160a2e 45%,#2a0d33 100%);
-  overflow:hidden;
-}
-.hero::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:radial-gradient(900px 360px at 50% 120%,rgba(255,210,74,.18),transparent 60%);
-}
-.hero-tag{
-  display:inline-flex;align-items:center;gap:8px;
-  font-size:.82rem;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;
-  padding:7px 16px;border-radius:999px;
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);
-  color:#ffd9b0;margin-bottom:26px;backdrop-filter:blur(6px);
-}
-.hero-tag .pulse{width:8px;height:8px;border-radius:50%;background:#ffd24a;box-shadow:0 0 0 0 rgba(255,210,74,.7);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,210,74,.6)}70%{box-shadow:0 0 0 10px rgba(255,210,74,0)}100%{box-shadow:0 0 0 0 rgba(255,210,74,0)}}
-.hero h1{
-  font-size:clamp(2.6rem,7vw,4.6rem);font-weight:900;letter-spacing:-1.5px;line-height:1;
-  margin-bottom:18px;
-  background:linear-gradient(95deg,#ffffff 0%,#ffd9b0 40%,#ff9d4d 70%,#ffce5a 100%);
-  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-  filter:drop-shadow(0 6px 30px rgba(248,124,27,.25));
-}
-.hero .subtitle{
-  font-size:clamp(1.05rem,2.4vw,1.45rem);font-weight:500;color:#e7e3f5;
-  max-width:760px;margin:0 auto 14px;line-height:1.45;
-}
-.hero .venue{font-size:1rem;color:#c9c4e0;margin-bottom:8px}
-.hero .venue b{color:#ffd24a;font-weight:800;letter-spacing:.5px}
-.authors{color:#e3e0f2;font-size:1.06rem;margin:24px auto 8px;max-width:820px;font-weight:500;line-height:1.7}
-.authors sup{color:#ffb27a;font-weight:700;font-size:.7em;padding-left:1px}
-.affil{color:#a7a3c2;font-size:.94rem;margin-bottom:4px}
-.affil sup{color:#ffb27a;font-weight:700}
-.affil.note{color:#8f8bac;font-size:.84rem;margin-bottom:30px}
-.affil.note span{white-space:nowrap}
+   radial-gradient(800px 420px at 20% 10%,rgba(160,26,110,.35),transparent 60%),
+   radial-gradient(900px 480px at 85% 0%,rgba(255,122,26,.25),transparent 60%),
+   radial-gradient(700px 400px at 50% 100%,rgba(70,17,122,.35),transparent 60%)}
+.hero > *{position:relative}
+.demo{max-width:1180px;margin:0 auto;border-radius:22px;padding:1.5px;background:var(--ironbow);box-shadow:0 40px 120px -40px rgba(255,90,40,.55)}
+.demo-inner{border-radius:21px;overflow:hidden;background:#000}
+.demo-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:11px 16px;background:#0c0e1c;border-bottom:1px solid var(--line);font-size:.84rem;color:var(--ink-soft)}
+.live{display:inline-flex;align-items:center;gap:7px;font-weight:800;letter-spacing:1.4px;color:#fff;font-size:.76rem;background:rgba(255,61,90,.18);border:1px solid rgba(255,61,90,.5);padding:3px 10px;border-radius:999px}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--hot-2);animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.demo-bar .sep{color:var(--muted)}
+.demo-bar .grow{flex:1}
+.iconbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid var(--line-2);border-radius:999px;padding:4px 12px;font-size:.8rem;cursor:pointer;color:var(--ink-soft)}
+.iconbtn:hover{color:#fff;border-color:var(--hot)}
+.demo img{width:100%;aspect-ratio:16/9;object-fit:contain;background:#000;cursor:zoom-in}
+.demo-legend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:10px 16px;background:#0c0e1c;border-top:1px solid var(--line);font-size:.82rem;color:var(--ink-soft)}
+.demo-legend span{display:inline-flex;align-items:center;gap:7px}
+.demo-legend i{width:18px;height:4px;border-radius:2px;display:inline-block}
 
-/* link buttons */
-.links{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:8px}
-.btn{
-  display:inline-flex;align-items:center;gap:9px;
-  padding:12px 22px;border-radius:999px;font-weight:600;font-size:.98rem;
-  background:rgba(255,255,255,.10);color:#fff;border:1px solid rgba(255,255,255,.22);
-  backdrop-filter:blur(8px);transition:transform .15s,background .2s,border-color .2s;
-}
-.btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4)}
-.btn.primary{background:linear-gradient(95deg,#f87c1b,#e8590c);border-color:transparent;box-shadow:0 12px 30px -10px rgba(248,124,27,.7)}
-.btn.primary:hover{background:linear-gradient(95deg,#ff8a2e,#f06407)}
-.btn.ghost{opacity:.62;cursor:default}
-.btn.ghost:hover{transform:none;background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22)}
+.hero-text{max-width:980px;margin:54px auto 0;text-align:center}
+.venue-tag{display:inline-flex;align-items:center;gap:9px;font-size:.78rem;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;padding:7px 16px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line-2);color:#ffd9b0}
+.venue-tag b{color:var(--amber)}
+.hero h1{font-size:clamp(3rem,10vw,6.4rem);font-weight:900;letter-spacing:-3px;line-height:.95;margin:22px 0 18px;
+  background:linear-gradient(95deg,#fff 0%,#ffe0c2 30%,#ff9d4d 62%,#ff3d5a 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.acro{font-size:clamp(1.1rem,2.6vw,1.6rem);font-weight:500;color:var(--ink-soft);line-height:1.4}
+.acro b{color:var(--hot);font-weight:800}
+.lede{max-width:760px;margin:18px auto 0;color:var(--muted);font-size:1.04rem}
+.authors{margin:30px auto 6px;max-width:860px;font-size:1.04rem;color:var(--ink);font-weight:500;line-height:1.8}
+.authors sup,.affil sup{color:#ffb27a;font-weight:700;font-size:.7em;padding-left:1px}
+.affil{color:var(--muted);font-size:.92rem}
+.affil span{white-space:nowrap;margin:0 10px}
+.note{color:#6f7390;font-size:.82rem;margin-top:6px}
+.links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:30px}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:12px 22px;border-radius:999px;font-weight:700;font-size:.97rem;background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--line-2);transition:transform .15s,background .2s,border-color .2s}
+.btn:hover{transform:translateY(-2px);color:#fff;border-color:rgba(255,255,255,.4);background:rgba(255,255,255,.1)}
+.btn.primary{background:linear-gradient(95deg,#ff7a1a,#ff3d5a);border-color:transparent;box-shadow:0 14px 34px -12px rgba(255,90,40,.8)}
 .btn svg{width:18px;height:18px;fill:currentColor}
 
-/* ---------- teaser ---------- */
-.teaser{max-width:1000px;margin:-38px auto 0;padding:0 24px;position:relative;z-index:5}
-.teaser figure{
-  background:var(--surface);border-radius:var(--radius);overflow:hidden;
-  box-shadow:var(--shadow);border:1px solid var(--line);
-}
-.teaser img{width:100%}
-.cap{font-size:.9rem;color:var(--muted);padding:14px 20px;line-height:1.55;border-top:1px solid var(--line);background:var(--surface)}
-.cap b{color:var(--ink-soft)}
-.legend{display:inline-flex;gap:14px;flex-wrap:wrap;margin-top:6px}
-.legend span{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;color:var(--ink-soft)}
-.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+/* ---------- stats ---------- */
+.stats{max-width:1180px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat{background:linear-gradient(180deg,var(--surface),var(--bg-2));border:1px solid var(--line);border-radius:16px;padding:22px 20px;position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--ironbow);opacity:.8}
+.stat .num{font-size:2.6rem;font-weight:900;letter-spacing:-1.5px;line-height:1;background:linear-gradient(95deg,#ffd24a,#ff7a1a 60%,#ff3d5a);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-variant-numeric:tabular-nums}
+.stat .lbl{margin-top:10px;font-size:.9rem;color:var(--ink-soft);line-height:1.45}
+.stat .src{margin-top:8px;font-size:.74rem;color:var(--muted);font-family:var(--mono)}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.stats{grid-template-columns:1fr}}
 
 /* ---------- layout ---------- */
-.wrap{max-width:1000px;margin:0 auto;padding:0 24px}
-section{padding:72px 0}
-.eyebrow{
-  display:block;text-align:center;font-weight:700;letter-spacing:2.5px;
-  text-transform:uppercase;font-size:.8rem;color:var(--brand);margin-bottom:10px;
-}
-h2.title{text-align:center;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.7px;color:var(--ink);margin-bottom:8px}
-.title-rule{width:62px;height:4px;border-radius:4px;background:var(--ironbow);margin:14px auto 0}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+section{padding:96px 0;position:relative}
+section.band{background:linear-gradient(180deg,var(--bg-2),var(--bg));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--hot)}
+.eyebrow::before{content:"";width:22px;height:2px;background:var(--ironbow)}
+h2.title{font-size:clamp(1.9rem,4.4vw,3rem);font-weight:900;letter-spacing:-1.2px;line-height:1.08;margin:14px 0 14px;max-width:900px}
+h2.title em{font-style:normal;background:var(--ironbow);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.intro{color:var(--ink-soft);font-size:1.08rem;max-width:820px}
+h3.sub{font-size:1.4rem;font-weight:800;letter-spacing:-.4px;margin:64px 0 10px;display:flex;align-items:center;gap:12px}
+h3.sub .tag{font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--muted);border:1px solid var(--line-2);padding:3px 9px;border-radius:999px;letter-spacing:.5px}
+p.body{color:var(--ink-soft);max-width:820px}
+.hl{color:var(--ink);font-weight:600;background:linear-gradient(transparent 64%,rgba(255,122,26,.35) 0)}
 
-/* abstract */
-.abstract-card{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--shadow-soft);padding:38px 42px;margin-top:34px;position:relative;overflow:hidden;
-}
-.abstract-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ironbow)}
-.abstract-card p{font-size:1.08rem;line-height:1.85;color:var(--ink-soft);text-align:justify}
-.abstract-card strong{color:var(--ink)}
-.hl{background:linear-gradient(transparent 62%,rgba(249,168,37,.35) 0);font-weight:600;color:var(--ink);padding:0 2px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.cap{font-size:.88rem;color:var(--muted);padding:14px 18px;border-top:1px solid var(--line);line-height:1.6}
+.cap b{color:var(--ink-soft)}
+.paper{background:#fff}
+.zoom{cursor:zoom-in}
 
-/* contribution chips */
-.contribs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
-@media(max-width:760px){.contribs{grid-template-columns:1fr}}
-.chip{
-  background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;
-  box-shadow:var(--shadow-soft);transition:transform .18s,box-shadow .18s,border-color .18s;
-}
-.chip:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#f3c9a8}
-.chip .ic{font-size:1.5rem;margin-bottom:10px;display:block}
-.chip h4{font-size:1.06rem;color:var(--ink);margin-bottom:6px;font-weight:700}
-.chip p{font-size:.94rem;color:var(--muted);line-height:1.6}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-2.wide-left{grid-template-columns:1.35fr 1fr}
+.nvs-grid{display:grid;grid-template-columns:1fr 1fr}
+.nvs-gt{border-right:1px solid var(--line);background:#000;position:relative;display:flex;align-items:center}
+@media(max-width:700px){.nvs-grid{grid-template-columns:1fr}.nvs-gt{border-right:0;border-bottom:1px solid var(--line)}}
+@media(max-width:860px){.grid-2,.grid-2.wide-left{grid-template-columns:1fr}}
 
-/* figure blocks */
-.figure{
-  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
-  overflow:hidden;box-shadow:var(--shadow-soft);margin-top:30px;
-}
-.figure .pad{padding:22px 22px 6px}
-.figure img{margin:0 auto;cursor:zoom-in}
-.figure .imgwrap{padding:22px}
-.figure .imgwrap.tight{padding:14px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0}
-.grid2 .col{padding:22px}
-.grid2 .col + .col{border-left:1px solid var(--line)}
-@media(max-width:760px){.grid2{grid-template-columns:1fr}.grid2 .col + .col{border-left:none;border-top:1px solid var(--line)}}
-.subcap{font-size:.85rem;color:var(--muted);text-align:center;margin-top:10px;font-weight:500}
+/* ---------- segmented control ---------- */
+.seg{display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:12px;background:var(--bg-2);border:1px solid var(--line)}
+.seg button{border:0;background:transparent;cursor:pointer;padding:7px 14px;border-radius:9px;font-size:.86rem;font-weight:600;color:var(--muted);transition:background .15s,color .15s}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line-2)}
+.seg button[aria-pressed="true"].ours{background:linear-gradient(95deg,rgba(255,122,26,.3),rgba(255,61,90,.25));box-shadow:inset 0 0 0 1px rgba(255,122,26,.55)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.toolbar .lbl{font-size:.8rem;color:var(--muted);font-family:var(--mono);letter-spacing:.5px}
 
-/* method row: text + figure */
-.method-block{margin-top:44px}
-.method-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-.method-num{
-  flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
-  font-weight:800;color:#fff;font-size:1.05rem;background:var(--ironbow);box-shadow:0 8px 20px -8px rgba(216,58,43,.6);
-}
-.method-head h3{font-size:1.32rem;font-weight:800;color:var(--ink);letter-spacing:-.3px}
-.method-block > p{color:var(--ink-soft);font-size:1.02rem;margin-left:56px;max-width:780px}
-.method-block .eq{
-  margin:14px 0 0 56px;display:inline-block;background:#fbf4ee;border:1px solid #f0d9c4;
-  border-radius:10px;padding:10px 18px;font-family:'JetBrains Mono',monospace;font-size:.98rem;color:var(--brand-2);
-}
-.method-block .eq.center{display:block;width:fit-content;margin:14px auto 0;text-align:center}
+/* stacked image viewer */
+.stack{position:relative;background:#000}
+.stack img{width:100%;height:100%;object-fit:contain;position:absolute;inset:0;opacity:0;transition:opacity .35s ease}
+.stack img.on{opacity:1}
+.stack .badge{position:absolute;left:12px;top:12px;z-index:2}
+.badge{font-size:.76rem;font-weight:700;letter-spacing:.4px;padding:4px 10px;border-radius:999px;background:rgba(7,8,15,.75);border:1px solid var(--line-2);color:var(--ink);backdrop-filter:blur(6px)}
+.badge.ours{border-color:rgba(255,122,26,.7);color:#ffd2b0}
+.verdict{display:flex;gap:12px;align-items:flex-start;padding:14px 18px;border-top:1px solid var(--line);min-height:76px}
+.verdict .ic{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:900;font-size:.9rem}
+.verdict .ic.bad{background:rgba(255,61,90,.16);color:#ff8a9a}
+.verdict .ic.good{background:rgba(61,214,140,.16);color:#7deab0}
+.verdict p{font-size:.92rem;color:var(--ink-soft)}
+.verdict b{color:var(--ink)}
 
-/* results */
-.alt{background:linear-gradient(180deg,#fff 0%,#fbf3ec 100%);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+/* compare slider */
+.compare{position:relative;overflow:hidden;background:#000;user-select:none;touch-action:pan-y}
+.compare img{width:100%;display:block;pointer-events:none}
+.compare .top{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--pos,50%)) 0 0)}
+.compare .top img{height:100%;object-fit:cover}
+.compare .handle{position:absolute;top:0;bottom:0;left:var(--pos,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 12px rgba(0,0,0,.6);pointer-events:none}
+.compare .handle::after{content:"◀ ▶";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.62rem;letter-spacing:2px;white-space:nowrap;background:#fff;color:#111;border-radius:999px;padding:7px 9px;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.compare input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.compare .lab{position:absolute;top:12px;z-index:2;pointer-events:none}
+.compare .lab.l{left:12px}.compare .lab.r{right:12px}
+.compare input:focus-visible ~ .handle{background:var(--amber)}
 
-/* table */
-.tablewrap{margin-top:30px;overflow-x:auto;border-radius:var(--radius);box-shadow:var(--shadow-soft);border:1px solid var(--line)}
-table{width:100%;border-collapse:collapse;background:var(--surface);font-size:.94rem;min-width:560px}
-caption{caption-side:top;text-align:left;padding:16px 20px 0;font-weight:700;color:var(--ink)}
-caption span{font-weight:400;color:var(--muted);font-size:.88rem}
-th,td{padding:12px 16px;text-align:center;border-bottom:1px solid var(--line)}
-thead th{background:#1b1430;color:#fff;font-weight:600;letter-spacing:.3px}
-thead th:first-child{text-align:left}
-tbody td:first-child{text-align:left;font-weight:600;color:var(--ink)}
-tbody tr:nth-child(even){background:#fbfbfe}
-.best{color:var(--brand-2);font-weight:800}
-.second{text-decoration:underline;text-underline-offset:3px;font-weight:600;color:var(--ink)}
-.ours td{background:#fff6ef!important}
-.ours td:first-child{color:var(--brand)}
-.tablewrap td.method{text-align:left;font-weight:700;color:var(--ink)}
-.tablewrap td.metric{text-align:left;font-weight:500;color:var(--ink-soft)}
-.tablewrap tr.grp td{text-align:left;font-weight:700;color:var(--brand-2);background:#f4eefb;letter-spacing:.4px;text-transform:uppercase;font-size:.78rem;padding:8px 16px}
-.tablewrap td.gcol{border-left:1px solid var(--line)}
-.tnote{font-size:.82rem;color:var(--muted);padding:10px 20px;background:var(--surface)}
-.legend-mark{font-size:.84rem;color:var(--muted);font-weight:400}
+/* ---------- contributions ---------- */
+.contrib{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:22px}
+@media(max-width:860px){.contrib{grid-template-columns:1fr}}
+.cbox{display:block;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;transition:transform .2s,border-color .2s,background .2s;color:var(--ink)}
+.cbox:hover{transform:translateY(-4px);border-color:rgba(255,122,26,.5);background:var(--surface-2);color:var(--ink)}
+.cbox .n{font-family:var(--mono);font-size:.78rem;color:var(--hot);font-weight:600}
+.cbox h4{font-size:1.12rem;font-weight:800;margin:8px 0 6px;letter-spacing:-.2px}
+.cbox p{color:var(--muted);font-size:.92rem;line-height:1.6}
+.cbox .go{margin-top:12px;font-size:.82rem;color:var(--ink-soft);font-weight:600}
+.abstract{font-size:1.02rem;color:var(--ink-soft);line-height:1.85}
+.abstract strong{color:var(--ink)}
+.takeaway{margin-top:26px;border-radius:16px;padding:20px 22px;border:1px solid rgba(255,122,26,.4);background:linear-gradient(95deg,rgba(255,122,26,.12),rgba(160,26,110,.10));font-size:1.06rem;color:var(--ink);font-weight:500}
+.takeaway b{color:var(--amber)}
+
+/* ---------- pipeline hotspots ---------- */
+.pipe{position:relative}
+.hot{position:absolute;border-radius:14px;border:2px dashed transparent;cursor:pointer;transition:border-color .2s,background .2s;background:transparent;padding:0}
+.hot:hover,.hot:focus-visible,.hot.on{border-color:var(--hot);background:rgba(255,122,26,.10);outline:none}
+.hot .pin{position:absolute;top:-11px;right:-11px;width:24px;height:24px;border-radius:50%;background:var(--ironbow);color:#fff;font-weight:800;font-size:.75rem;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.hot .pin::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid rgba(255,122,26,.7);animation:ring 2.2s infinite}
+@keyframes ring{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.pipe-info{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border-top:1px solid var(--line);min-height:92px}
+.pipe-info .k{flex:none;font-family:var(--mono);font-size:.74rem;color:var(--hot);border:1px solid rgba(255,122,26,.5);border-radius:999px;padding:3px 10px;margin-top:2px}
+.pipe-info h4{font-size:1rem;font-weight:800}
+.pipe-info p{font-size:.92rem;color:var(--ink-soft)}
+.pipe-info a{font-weight:600;font-size:.88rem}
+
+/* ---------- method ---------- */
+.mhead{display:flex;align-items:center;gap:16px;margin-top:84px}
+.mhead:first-of-type{margin-top:40px}
+.mnum{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-weight:900;font-size:1.25rem;background:var(--ironbow);color:#fff;box-shadow:0 12px 30px -10px rgba(224,53,43,.8)}
+.mhead h3{font-size:clamp(1.35rem,3vw,1.9rem);font-weight:900;letter-spacing:-.6px;line-height:1.15}
+.mhead .where{display:block;font-family:var(--mono);font-size:.74rem;color:var(--muted);font-weight:500;letter-spacing:.5px;margin-top:2px}
+.mtext{margin:16px 0 22px 68px;color:var(--ink-soft);max-width:860px}
+@media(max-width:640px){.mtext{margin-left:0}}
+.eqs{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 22px 68px}
+@media(max-width:640px){.eqs{margin-left:0}}
+.eq{background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;padding:12px 18px;color:var(--ink);overflow-x:auto;max-width:100%}
+.eq small{display:block;font-family:var(--mono);font-size:.7rem;color:var(--muted);margin-bottom:4px;letter-spacing:.4px}
+.katex{font-size:1.06em}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--ink-soft)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.legend i.line{width:18px;height:3px;border-radius:2px}
+
+/* stepper */
+.stepper{display:grid;grid-template-columns:280px 1fr;gap:0}
+@media(max-width:900px){.stepper{grid-template-columns:1fr}}
+.steps{list-style:none;border-right:1px solid var(--line);padding:10px}
+@media(max-width:900px){.steps{border-right:0;border-bottom:1px solid var(--line);display:flex;overflow-x:auto;gap:6px}}
+.steps button{width:100%;text-align:left;display:flex;gap:12px;align-items:flex-start;background:transparent;border:1px solid transparent;border-radius:12px;padding:12px;cursor:pointer;transition:background .15s,border-color .15s;position:relative;overflow:hidden}
+@media(max-width:900px){.steps button{min-width:190px}}
+.steps button:hover{background:rgba(255,255,255,.04)}
+.steps button[aria-selected="true"]{background:var(--surface-2);border-color:var(--line-2)}
+.steps .sn{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:.8rem;background:var(--bg-2);border:1px solid var(--line-2);color:var(--muted)}
+.steps button[aria-selected="true"] .sn{background:var(--ironbow);border-color:transparent;color:#fff}
+.steps .st,.steps .sd{display:block}
+.steps .st{font-weight:700;font-size:.92rem;line-height:1.3;color:var(--ink)}
+.steps .sd{font-size:.78rem;color:var(--muted);margin-top:2px}
+.steps .bar{position:absolute;left:0;bottom:0;height:2px;background:var(--ironbow);width:0}
+.stage{padding:16px;min-width:0}
+.stage-media{display:grid;grid-template-columns:1.7fr 1fr;gap:12px;align-items:stretch}
+.stage-media.full{grid-template-columns:1fr}
+@media(max-width:700px){.stage-media{grid-template-columns:1fr}}
+.stage-media figure{background:#000;border-radius:12px;overflow:hidden;border:1px solid var(--line);position:relative;display:flex;align-items:center}
+.stage-media img{width:100%}
+.stage-media .badge{position:absolute;top:10px;left:10px}
+.stage-media .badge.r{left:auto;right:10px}
+.stage-text{margin-top:14px}
+.stage-text h4{font-size:1.08rem;font-weight:800;margin-bottom:4px}
+.stage-text p{font-size:.94rem;color:var(--ink-soft)}
+.stage-text .eq{margin-top:10px;display:inline-block}
+.stage-ctl{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px}
+
+/* sigmoid widget */
+.widget{display:grid;grid-template-columns:1fr;gap:0}
+.widget svg{width:100%;height:auto;display:block}
+.widget .ctl{padding:16px 18px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;align-items:start}
+.widget .ctl .read{grid-column:1/-1}
+@media(max-width:480px){.widget .ctl{grid-template-columns:1fr}}
+.ctl label{display:block;font-size:.82rem;color:var(--ink-soft);font-weight:600}
+.ctl label span{float:right;font-family:var(--mono);color:var(--amber)}
+.ctl input[type=range]{width:100%;accent-color:var(--hot);margin-top:6px}
+.ctl .read{font-size:.86rem;color:var(--muted);line-height:1.55}
+.ctl .read b{color:var(--ink);font-family:var(--mono)}
+.ctl .reset{align-self:flex-start;justify-self:start}
+
+/* ---------- charts ---------- */
+.chart{padding:18px}
+.crow{display:grid;grid-template-columns:172px 1fr 64px;align-items:center;gap:10px;height:24px}
+.crow .nm{font-size:.82rem;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crow .nm.ours{color:var(--ink);font-weight:800}
+.crow .track{position:relative;height:12px}
+.crow .b{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--bar);transform-origin:left center;animation:grow .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleX(0)}}
+.crow .b.ours{background:linear-gradient(90deg,#ff3d5a,#ff7a1a)}
+.crow .b.fail{background:repeating-linear-gradient(135deg,rgba(255,61,90,.0) 0 5px,rgba(255,61,90,.35) 5px 7px);border:1px dashed rgba(255,61,90,.55);border-radius:4px}
+.crow .v{font-family:var(--mono);font-size:.8rem;color:var(--ink-soft);text-align:right;font-variant-numeric:tabular-nums}
+.crow .v.best{color:var(--amber);font-weight:600}
+.crow:hover .nm{color:var(--ink)}
+.crow:hover .b:not(.ours):not(.fail){background:#7d84ab}
+.cgroup{padding:10px 0 12px;border-bottom:1px dashed var(--line)}
+.cgroup:last-child{border-bottom:0}
+.cgroup h5{font-family:var(--mono);font-size:.78rem;color:var(--ink);font-weight:600;margin-bottom:6px;letter-spacing:.3px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 36px}
+@media(max-width:860px){.cgrid{grid-template-columns:1fr}}
+@media(max-width:480px){.crow{grid-template-columns:104px 1fr 56px}}
+#ablChart .crow{grid-template-columns:150px 1fr 112px}
+#rtChart .crow{grid-template-columns:160px 1fr 70px}
+@media(max-width:480px){#ablChart .crow{grid-template-columns:104px 1fr 100px}#rtChart .crow{grid-template-columns:120px 1fr 60px}}
+.chart-note{font-size:.8rem;color:var(--muted);padding:0 18px 16px}
+.tip{position:fixed;z-index:300;pointer-events:none;background:#0c0e1c;border:1px solid var(--line-2);color:var(--ink);font-size:.8rem;padding:7px 10px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transition:opacity .12s;max-width:260px}
+.tip b{font-family:var(--mono)}
+
+/* ---------- tables ---------- */
+details.tbl{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+details.tbl > summary{cursor:pointer;list-style:none;padding:14px 18px;font-weight:700;font-size:.94rem;display:flex;align-items:center;justify-content:space-between;gap:12px}
+details.tbl > summary::-webkit-details-marker{display:none}
+details.tbl > summary::after{content:"+";font-family:var(--mono);color:var(--hot);font-size:1.1rem}
+details.tbl[open] > summary::after{content:"−"}
+details.tbl > summary span{font-weight:400;color:var(--muted);font-size:.84rem}
+.tablewrap{overflow-x:auto;border-top:1px solid var(--line)}
+table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:620px}
+th,td{padding:9px 12px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th{background:var(--bg-2);color:var(--ink-soft);font-weight:600;font-size:.8rem}
+th:first-child,td:first-child{text-align:left}
+td{color:var(--ink-soft);font-family:var(--mono);font-size:.82rem}
+td.lbl{font-family:'Inter',sans-serif;color:var(--ink);font-weight:600;font-size:.86rem}
+td.mt{font-family:'Inter',sans-serif;color:var(--muted)}
+tr.grp td{background:rgba(255,255,255,.025);color:var(--hot);font-family:var(--mono);font-size:.72rem;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+td.best{color:var(--amber);font-weight:700}
+td.second{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+td.fail{color:#ff8a9a}
+th.ours,td.ours{background:rgba(255,122,26,.07)}
+tr.ours td{background:rgba(255,122,26,.07)}
+.tnote{font-size:.8rem;color:var(--muted);padding:10px 18px 14px}
+.tnote .k1{color:var(--amber);font-weight:700}.tnote .k2{color:var(--ink);text-decoration:underline}
 
 /* bibtex */
-.bibtex{
-  background:#0e1226;border-radius:var(--radius);padding:0;margin-top:30px;overflow:hidden;
-  box-shadow:var(--shadow);border:1px solid #20264a;
-}
-.bibtex-head{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;background:#161b3a;border-bottom:1px solid #20264a}
-.bibtex-head span{color:#cdd2f0;font-weight:600;font-size:.92rem;letter-spacing:.4px}
-.copybtn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#e8e8ff;
-  padding:6px 14px;border-radius:8px;font-size:.84rem;cursor:pointer;font-weight:500;transition:background .2s}
-.copybtn:hover{background:rgba(255,255,255,.16)}
-.bibtex pre{padding:20px;color:#c7d0f5;font-family:'JetBrains Mono',monospace;font-size:.86rem;line-height:1.7;overflow-x:auto}
-.bibtex .k{color:#ff9d4d}.bibtex .v{color:#9fe6c4}
+.bib{background:#05060c;border:1px solid var(--line-2);border-radius:16px;overflow:hidden;margin-top:24px}
+.bib-head{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--bg-2)}
+.bib-head span{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.tablewrap,.bib pre{scrollbar-color:#2a2f52 transparent}
+.bib pre{padding:20px;color:#c7d0f5;font-family:var(--mono);font-size:.84rem;line-height:1.75;overflow-x:auto}
+.bib .k{color:#ff9d4d}.bib .v{color:#9fe6c4}
 
-/* footer */
-footer{background:var(--navy);color:#9c98b8;text-align:center;padding:46px 24px}
-footer .fbrand{color:#fff;font-weight:800;letter-spacing:.5px;font-size:1.1rem;margin-bottom:8px}
-footer a{color:#ffb27a}
-footer .small{font-size:.84rem;margin-top:10px;opacity:.7}
+footer{border-top:1px solid var(--line);padding:46px 20px;text-align:center;color:var(--muted);font-size:.86rem}
+footer .fb{color:var(--ink);font-weight:800;font-size:1.05rem;margin-bottom:6px}
+footer p+p{margin-top:6px}
 
 /* lightbox */
-.lb{position:fixed;inset:0;background:rgba(8,10,22,.92);display:none;align-items:center;justify-content:center;
-  z-index:200;padding:30px;cursor:zoom-out}
+.lb{position:fixed;inset:0;background:rgba(4,5,10,.94);display:none;align-items:center;justify-content:center;z-index:400;padding:24px;cursor:zoom-out}
 .lb.open{display:flex}
-.lb img{max-width:95vw;max-height:92vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.lb img{max-width:96vw;max-height:92vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.7)}
+.lb .x{position:absolute;top:16px;right:20px;font-size:1.6rem;color:#fff;background:none;border:0;cursor:pointer}
 
-/* reveal animation */
-.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+/* reveal */
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
 .reveal.in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+@media(prefers-reduced-motion:reduce){.crow .b{animation:none}.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}.hot .pin::after,.live i{animation:none}}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav class="nav">
+<nav class="nav" aria-label="Sections">
   <div class="nav-inner">
-    <a class="nav-brand" href="#top" aria-label="Back to top"><span class="dot"></span>PI-EAT-SLAM</a>
+    <a class="brand" href="#top"><span class="dot"></span>PI-EAT-SLAM</a>
     <div class="nav-links">
-      <a href="#abstract">Abstract</a>
       <a href="#overview">Overview</a>
+      <a href="#problem">Problem</a>
+      <a href="#pipeline">Pipeline</a>
       <a href="#method">Method</a>
       <a href="#results">Results</a>
-      <a href="#bibtex">BibTeX</a>
+      <a href="#ablation">Ablation</a>
+      <a href="#citation">Citation</a>
+    </div>
+    <div class="nav-cta">
+      <a href="paper.pdf" target="_blank" rel="noopener noreferrer">Paper</a>
       <a href="https://github.com/pi-eat-slam/PI-EAT-SLAM" target="_blank" rel="noopener noreferrer">Code</a>
     </div>
   </div>
+  <div class="progress" id="progress"></div>
 </nav>
 
 <!-- HERO -->
 <header class="hero" id="top">
-  <div class="hero-tag"><span class="pulse"></span>IROS 2026 · Accepted</div>
-  <h1>PI-EAT-SLAM</h1>
-  <p class="subtitle">Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</p>
-  <p class="venue">The thermal-depth 3D Gaussian Splatting SLAM framework</p>
+  <div class="demo">
+    <div class="demo-inner">
+      <div class="demo-bar">
+        <span class="live"><i></i>DEMO</span>
+        <span>Multi-spectral dataset · <b style="color:#fff">desk2-xyz</b></span>
+        <span class="sep">/</span>
+        <span>PI-EAT-SLAM vs. MonoGS vs. HI-SLAM2</span>
+        <span class="grow"></span>
+        <button class="iconbtn" data-zoom-target="demoImg" aria-label="Enlarge demo">⤢ Enlarge</button>
+      </div>
+      <img id="demoImg" src="media/demo_desk2xyz.webp" width="1152" height="648" fetchpriority="high"
+           alt="Demo: rendered views of MonoGS, HI-SLAM2 and PI-EAT-SLAM on desk2-xyz, with the 3D Gaussian map and estimated trajectories; HI-SLAM2 deviates far from ground truth while PI-EAT-SLAM follows it.">
+      <div class="demo-legend">
+        <span><i style="background:#ff2a2a"></i>PI-EAT-SLAM (ours)</span>
+        <span><i style="background:#2f3cff"></i>MonoGS</span>
+        <span><i style="background:#ffe600"></i>HI-SLAM2</span>
+        <span><i style="background:#8fd16a"></i>Ground truth</span>
+        <span style="margin-left:auto;color:var(--muted)">Top row: rendered thermal views · right: our matched edge points</span>
+      </div>
+    </div>
+  </div>
 
-  <p class="authors">
-    Junpyo Kim<sup>1,&#42;</sup>, Seonwook Yeom<sup>1</sup>, Seonmo Yang<sup>1</sup>, Jungil Ham<sup>1</sup>,
-    Hyeonji Shin<sup>1</sup>, Changhyeon Kim<sup>2</sup>, Hyeonbeom Lee<sup>3</sup>, Pyojin Kim<sup>1,&dagger;</sup>
-  </p>
-  <p class="affil">
-    <sup>1</sup>&nbsp;Gwangju Institute of Science and Technology (GIST)
-    &nbsp;&nbsp;&nbsp; <sup>2</sup>&nbsp;Holiday Robotics
-    &nbsp;&nbsp;&nbsp; <sup>3</sup>&nbsp;Ajou University
-  </p>
-  <p class="affil note"><span>&#42;&nbsp;First author</span> &nbsp;&nbsp;&middot;&nbsp;&nbsp; <span>&dagger;&nbsp;Corresponding author</span></p>
+  <div class="hero-text">
+    <span class="venue-tag"><b>IROS 2026</b> · Pittsburgh, PA, USA</span>
+    <h1>PI-EAT-SLAM</h1>
+    <p class="acro"><b>P</b>hysics-<b>I</b>nformed <b>E</b>dge-<b>A</b>ware <b>T</b>hermal Gaussian Splatting <b>SLAM</b></p>
+    <p class="lede">The first thermal-depth 3D Gaussian Splatting SLAM framework. It tracks <em>edges</em>, not intensities, so it keeps working where photometric SLAM loses track.</p>
 
-  <div class="links">
-    <a class="btn" href="paper.pdf" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 2 4 4h-4zM8 13h8v2H8zm0 4h8v2H8z"/></svg>
-      Paper
-    </a>
-    <a class="btn ghost">
-      <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zm9 3-6 4 6 4 6-4z"/></svg>
-      Video · soon
-    </a>
-    <a class="btn primary" href="https://github.com/pi-eat-slam/PI-EAT-SLAM" target="_blank" rel="noopener noreferrer">
-      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
-      Code
-    </a>
+    <p class="authors">
+      Junpyo Kim<sup>1</sup>, Seonwook Yeom<sup>1</sup>, Seonmo Yang<sup>1</sup>, Jungil Ham<sup>1</sup>,
+      Hyeonji Shin<sup>1</sup>, Changhyeon Kim<sup>2</sup>, Hyeonbeom Lee<sup>3</sup>, Pyojin Kim<sup>1,&dagger;</sup>
+    </p>
+    <p class="affil">
+      <span><sup>1</sup> GIST</span><span><sup>2</sup> Holiday Robotics</span><span><sup>3</sup> Ajou University</span>
+    </p>
+    <p class="note">&dagger; Corresponding author</p>
+
+    <div class="links">
+      <a class="btn primary" href="paper.pdf" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm0 2 4 4h-4zM8 13h8v2H8zm0 4h8v2H8z"/></svg>
+        Paper
+      </a>
+      <a class="btn" href="https://github.com/pi-eat-slam/PI-EAT-SLAM" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+        Code
+      </a>
+      <a class="btn" href="#citation">
+        <svg viewBox="0 0 24 24"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
+        BibTeX
+      </a>
+    </div>
   </div>
 </header>
 
-<!-- TEASER -->
-<div class="teaser reveal">
-  <figure>
-    <img src="images/intro_front_page.png" alt="PI-EAT-SLAM thermal SLAM tracking and reconstruction overview">
-    <figcaption class="cap">
-      <b>PI-EAT-SLAM in action.</b> Real-time tracking and dense 3D Gaussian mapping in a low-contrast, texture-sparse thermal scene.
-      The background shows the reconstructed 3DGS map and recovered camera trajectory; the inset visualizes robust edge-point matching.
-      <span class="legend">
-        <span><i style="background:#e11d48"></i>rendered edge points</span>
-        <span><i style="background:#2563eb"></i>ground-truth edge points</span>
-        <span><i style="background:#0e9bd6"></i>residual vectors</span>
-      </span>
-    </figcaption>
-  </figure>
+<!-- STATS -->
+<div class="stats reveal" aria-label="Key results">
+  <div class="stat"><div class="num">1st</div><div class="lbl">thermal-depth 3D Gaussian Splatting SLAM framework</div><div class="src">contribution</div></div>
+  <div class="stat"><div class="num" data-count="5" data-suffix=" / 5">5 / 5</div><div class="lbl">illumination-varying sequences where we have the lowest ATE</div><div class="src">Table I · Multi-spectral</div></div>
+  <div class="stat"><div class="num" data-count="39" data-prefix="−" data-suffix="%">−39%</div><div class="lbl">mean ATE vs. MonoGS over the five varying-illumination sequences</div><div class="src">Table I · 0.060 vs 0.099 m</div></div>
+  <div class="stat"><div class="num" data-count="36" data-prefix="−" data-suffix="%">−36%</div><div class="lbl">lower mean ATE with GE-KLT tracking than without it (ablation)</div><div class="src">Table V · 0.085 → 0.054 m</div></div>
 </div>
 
-<!-- ABSTRACT -->
-<section id="abstract">
-  <div class="wrap reveal">
-    <span class="eyebrow">Abstract</span>
-    <h2 class="title">Edge-driven SLAM for the thermal domain</h2>
-    <div class="title-rule"></div>
-    <div class="abstract-card">
-      <p>
-        Conventional SLAM systems that rely on photometric alignment or point features often fail in the texture-sparse,
-        low-contrast imagery produced by thermal cameras. We present <strong>PI-EAT-SLAM</strong>
-        (Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM), the
-        <span class="hl">first thermal-depth 3D Gaussian Splatting SLAM framework</span>.
-        Instead of depending on raw photometric intensity, our approach exploits robust geometric <em>edge</em> features to achieve
-        reliable tracking and mapping in visually degraded environments. A <span class="hl">Stefan-Boltzmann law-based rescaling</span>
-        module physically enhances thermal contrast without amplifying noise; a multi-stage <span class="hl">Gradient-aware Edge-KLT (GE-KLT)</span>
-        tracker establishes highly reliable correspondences via dual-constraint outlier rejection; and an
-        <span class="hl">edge-aware smoothness loss</span> preserves sharp thermal boundaries during mapping. Extensive experiments on public
-        and custom datasets show that PI-EAT-SLAM achieves superior tracking accuracy and highly competitive novel-view synthesis
-        compared to state-of-the-art baselines.
-      </p>
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="wrap">
+    <div class="grid-2 wide-left reveal" style="align-items:start">
+      <div>
+        <span class="eyebrow">Overview</span>
+        <h2 class="title">SLAM that runs on <em>heat edges</em>, not on texture</h2>
+        <p class="abstract">
+          Thermal cameras see in the dark and through illumination changes, but their images are <strong>low-contrast,
+          texture-sparse and noisy</strong>. SLAM that relies on photometric alignment or point features breaks down on them.
+          <strong>PI-EAT-SLAM</strong> takes thermal + depth input and tracks the camera with robust geometric <strong>edges</strong>.
+          A <span class="hl">Stefan-Boltzmann rescaling</span> step restores contrast using the physics of thermal radiation. A multi-stage
+          <span class="hl">Gradient-aware Edge-KLT (GE-KLT)</span> tracker keeps only reliable edge correspondences, and an
+          <span class="hl">edge-aware smoothness loss</span> keeps the 3D Gaussian map sharp at boundaries and smooth elsewhere.
+        </p>
+      </div>
+      <figure class="card">
+        <img class="zoom" src="media/contrib_mapping.webp" width="1152" height="648" loading="lazy"
+             alt="PI-EAT-SLAM building a 3D Gaussian map from thermal-depth input, with the live thermal frame inset.">
+        <figcaption class="cap"><b>Online 3DGS mapping from thermal-depth input</b> (×8 speed). The inset shows the live thermal frame.</figcaption>
+      </figure>
     </div>
 
-    <div class="contribs">
-      <div class="chip">
-        <span class="ic">🌡️</span>
-        <h4>Physics-informed contrast</h4>
-        <p>Stefan-Boltzmann radiance rescaling (L ∝ T⁴) restores true thermal contrast while suppressing sensor noise.</p>
+    <div class="contrib reveal">
+      <a class="cbox" href="#m-sb">
+        <span class="n">01 · Preprocessing</span>
+        <h4>Stefan-Boltzmann rescaling</h4>
+        <p>Converts raw 16-bit thermal values to temperature, then to radiance <span class="nowrap">L ∝ T⁴</span>, before normalizing to 8 bits. Contrast goes up without boosting noise.</p>
+        <div class="go">See how it works →</div>
+      </a>
+      <a class="cbox" href="#m-geklt">
+        <span class="n">02 · Tracking</span>
+        <h4>GE-KLT loss</h4>
+        <p>KLT tracking, then nearest-edge matching, then dual-constraint outlier rejection (distance + gradient direction). Only reliable edge pairs drive the pose.</p>
+        <div class="go">Step through it →</div>
+      </a>
+      <a class="cbox" href="#m-smooth">
+        <span class="n">03 · Mapping</span>
+        <h4>Edge-aware smoothness loss</h4>
+        <p>Smooths flat regions to suppress thermal radiance artifacts, but backs off near strong gradients so geometric boundaries stay sharp.</p>
+        <div class="go">Try the weight →</div>
+      </a>
+    </div>
+
+    <div class="takeaway reveal"><b>Take-home message.</b> PI-EAT-SLAM enables robust tracking and mapping in visually degraded environments by Stefan-Boltzmann law-based rescaling and edge-based optimization.</div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem" class="band">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">The problem</span>
+      <h2 class="title">Thermal images break <em>conventional SLAM</em></h2>
+      <p class="intro">Conventional SLAM relies on <b style="color:var(--ink)">point feature matching</b> or <b style="color:var(--ink)">photometric loss</b>.
+        Both degrade in low-contrast, feature-sparse thermal images. Existing thermal SLAM often adds an IMU or LiDAR, which brings
+        time synchronization, calibration and payload costs.</p>
+    </div>
+
+    <div class="grid-2 reveal" style="margin-top:30px;align-items:start">
+      <div class="card">
+        <div class="toolbar">
+          <span class="lbl">SIFT + RANSAC · desk2-xyz</span>
+          <div class="seg" data-group="sift">
+            <button aria-pressed="true" data-show="0">RGB</button>
+            <button aria-pressed="false" data-show="1">Thermal</button>
+          </div>
+        </div>
+        <div class="stack zoom-stack" data-stack="sift" style="aspect-ratio:1280/480">
+          <img class="on" src="media/problem_sift_rgb.webp" width="1280" height="480" loading="lazy" alt="SIFT+RANSAC matches on RGB frames: many yellow correspondence lines.">
+          <img src="media/problem_sift_thermal.webp" width="1280" height="480" loading="lazy" alt="SIFT+RANSAC matches on thermal frames: only a handful of correspondences.">
+        </div>
+        <div class="verdict" data-verdict="sift">
+          <span class="ic good">✓</span><p><b>RGB:</b> dense texture gives many point matches.</p>
+        </div>
       </div>
-      <div class="chip">
-        <span class="ic">⚡</span>
-        <h4>Robust edge tracking</h4>
-        <p>GE-KLT couples KLT tracking with nearest-neighbor matching under spatial + gradient-directional dual-constraint outlier rejection.</p>
-      </div>
-      <div class="chip">
-        <span class="ic">🧊</span>
-        <h4>Edge-aware mapping</h4>
-        <p>An edge-aware smoothness loss enforces thermal equilibrium while preserving sharp boundaries in dense 3DGS.</p>
+
+      <div class="card">
+        <div class="toolbar"><span class="lbl">MonoGS (Thermal-D) · desk2-xyz</span><span class="badge" style="border-color:rgba(255,61,90,.6);color:#ff9aa8">Photometric tracking failure</span></div>
+        <div class="paper"><img class="zoom" src="media/problem_monogs_fail.webp" width="1185" height="975" loading="lazy" alt="Trajectory plot: MonoGS on thermal-depth input drifts away from the ground truth trajectory." style="max-height:420px;margin:0 auto"></div>
+        <div class="verdict"><span class="ic bad">✕</span><p><b>Photometric GS-SLAM</b> follows the ground truth (dashed) for a while, then loses track. The red marker shows where it fails.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- OVERVIEW / PIPELINE -->
-<section id="overview" class="alt">
-  <div class="wrap reveal">
-    <span class="eyebrow">System Overview</span>
-    <h2 class="title">The PI-EAT-SLAM pipeline</h2>
-    <div class="title-rule"></div>
-    <div class="figure">
-      <div class="imgwrap">
-        <img src="images/method_main.png" alt="PI-EAT-SLAM full system pipeline">
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">System overview</span>
+      <h2 class="title">The PI-EAT-SLAM <em>pipeline</em></h2>
+      <p class="intro">Click a block to see what it does and jump to the details.</p>
+    </div>
+    <div class="card reveal" style="margin-top:28px">
+      <div class="paper pipe" id="pipe">
+        <img src="media/fig2_pipeline.webp" width="2400" height="1305" loading="lazy" alt="PI-EAT-SLAM pipeline: S-B rescaling, GE-KLT tracking, 3D Gaussian map, keyframing, physics-grounded rendering, and mapping with edge-aware smoothing.">
+        <button class="hot" data-k="sb" style="left:0.3%;top:4.5%;width:30.2%;height:29.5%" aria-label="S-B Rescaling"><span class="pin">1</span></button>
+        <button class="hot" data-k="track" style="left:0.3%;top:38.5%;width:30.2%;height:32.5%" aria-label="Tracking"><span class="pin">2</span></button>
+        <button class="hot" data-k="map3d" style="left:0.3%;top:75%;width:30.2%;height:24.5%" aria-label="3D Gaussian Map"><span class="pin">3</span></button>
+        <button class="hot" data-k="kf" style="left:37%;top:4.5%;width:29.5%;height:57.5%" aria-label="Keyframing"><span class="pin">4</span></button>
+        <button class="hot" data-k="render" style="left:37%;top:77.5%;width:29.5%;height:19%" aria-label="Physics-grounded rendering"><span class="pin">5</span></button>
+        <button class="hot" data-k="mapping" style="left:70.6%;top:4.5%;width:29.2%;height:95%" aria-label="Mapping"><span class="pin">6</span></button>
       </div>
-      <figcaption class="cap">
-        <b>End-to-end architecture.</b> <em>(Left)</em> Stefan-Boltzmann (S-B) rescaling enhances thermal contrast to enable reliable edge
-        extraction, which drives our Gradient-aware Edge-KLT tracking. <em>(Center)</em> A keyframing module manages co-visibility,
-        keyframe selection and Gaussian insertion/pruning, all coupled with Physics-Grounded rendering. <em>(Right)</em> An edge-aware
-        smoothness loss regularizes 3DGS mapping for high-fidelity dense reconstruction in thermally degraded scenes.
-      </figcaption>
+      <div class="pipe-info" id="pipeInfo" aria-live="polite">
+        <span class="k">tip</span>
+        <div><h4>Hover or tap a block</h4><p>Each numbered block maps to a section of the paper.</p></div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- METHOD -->
-<section id="method">
-  <div class="wrap reveal">
-    <span class="eyebrow">Method</span>
-    <h2 class="title">Three pillars, one robust system</h2>
-    <div class="title-rule"></div>
+<section id="method" class="band">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">Method</span>
+      <h2 class="title">Physics in, edges out: <em>three components</em></h2>
+    </div>
 
-    <!-- 1 S-B Rescaling -->
-    <div class="method-block">
-      <div class="method-head">
-        <div class="method-num">1</div>
-        <h3>Stefan-Boltzmann Thermal Rescaling</h3>
+    <!-- 1. S-B rescaling -->
+    <div id="m-sb" class="reveal">
+      <div class="mhead"><div class="mnum">1</div><h3>Stefan-Boltzmann law-based rescaling<span class="where">Sec. IV-A · preprocessing</span></h3></div>
+      <p class="mtext">Thermal sensors record 14/16-bit data that must be squeezed into 8 bits for tracking. Linear min-max scaling of raw
+        intensities loses thermal detail. We first convert each raw value to absolute temperature \(T\) using the camera
+        manufacturer's formula, then to radiance with the Stefan-Boltzmann law, and normalize the <em>radiance</em> to 8 bits. The constants
+        \(\epsilon\) and \(\sigma\) cancel in the normalization, so exact emissivity is not needed. CLAHE and a bilateral filter then boost local
+        contrast and attenuate noise.</p>
+      <div class="eqs">
+        <div class="eq"><small>radiance (Eq. 4)</small>\(L(x,y)=\epsilon\,\sigma\,T(x,y)^4\)</div>
+        <div class="eq"><small>8-bit rescaling (Eq. 5)</small>\(I_{\text{scaled}}(x,y)=\dfrac{L(x,y)-L_{\min}}{L_{\max}-L_{\min}}\times 255\)</div>
       </div>
-      <p>
-        Raw 14/16-bit thermal data must be compressed to 8 bits for tracking. Conventional min-max scaling loses critical thermal
-        detail and contrast. We instead convert raw intensities to an absolute temperature map and apply the Stefan-Boltzmann law to
-        obtain surface radiance, which is proportional to the fourth power of temperature. This non-linear mapping amplifies subtle but
-        physically meaningful temperature variations far better than linear scaling — yielding sharper, less noisy 8-bit images. CLAHE and
-        bilateral filtering then sharpen local detail while attenuating noise.
-      </p>
-      <div class="eq center">L(x, y) = ε · σ · T(x, y)⁴</div>
 
-      <div class="figure">
-        <div class="imgwrap tight">
-          <img src="images/method_S-B_rescaling.png" alt="Edge-point matching comparison across rescaling methods">
+      <div class="card">
+        <div class="toolbar">
+          <div class="legend"><span><i style="background:var(--edge-red)"></i>rendered edge points</span><span><i style="background:var(--edge-blue)"></i>GT edge points</span><span><i class="line" style="background:var(--cyan)"></i>correspondences</span></div>
+          <div class="seg" data-group="sb">
+            <button aria-pressed="false" data-show="0">Original</button>
+            <button aria-pressed="false" data-show="1">Min-max</button>
+            <button aria-pressed="false" data-show="2">FieldScale</button>
+            <button aria-pressed="true" data-show="3" class="ours">S-B (Ours)</button>
+          </div>
         </div>
-        <figcaption class="cap">
-          <b>Why physics matters for edges.</b> Edge-point matching across rescaling methods: (a) original thermal, (b) min-max scaling,
-          (c) FieldScale, and (d) our Stefan-Boltzmann rescaling. Our method produces the most reliable, consistent matches (red/blue dots
-          with cyan residual lines) by enhancing contrast while suppressing noise.
-        </figcaption>
+        <div class="stack" data-stack="sb" style="aspect-ratio:3/2;width:min(100%,760px);margin:0 auto">
+          <img src="media/sb_original.webp" loading="lazy" alt="Edge matching on the original thermal image: very few matches.">
+          <img src="media/sb_minmax.webp" loading="lazy" alt="Edge matching after min-max scaling: many incorrect correspondences.">
+          <img src="media/sb_fieldscale.webp" loading="lazy" alt="Edge matching after FieldScale: noise amplified, widespread false matches.">
+          <img class="on" src="media/sb_ours.webp" loading="lazy" alt="Edge matching after S-B rescaling: accurate matches along physical boundaries.">
+        </div>
+        <div class="verdict" data-verdict="sb"><span class="ic good">✓</span><p><b>S-B rescaling (ours):</b> boosts contrast without amplifying noise, giving accurate matches along physical boundaries.</p></div>
+      </div>
+
+      <figure class="card" style="margin-top:18px">
+        <div class="paper"><img class="zoom" src="media/fig4_enhancement.webp" width="2000" height="616" loading="lazy" alt="Step-by-step preprocessing: S-B rescaling, plus CLAHE, plus bilateral filtering."></div>
+        <figcaption class="cap"><b>Full preprocessing chain (Fig. 4).</b> (a) S-B rescaling for global contrast → (b) + CLAHE for local detail → (c) + bilateral filter: sharp edges are kept while noise is reduced.</figcaption>
+      </figure>
+    </div>
+
+    <!-- 2. GE-KLT -->
+    <div id="m-geklt" class="reveal">
+      <div class="mhead"><div class="mnum">2</div><h3>Gradient-aware Edge-KLT (GE-KLT) tracking<span class="where">Sec. IV-B · tracking</span></h3></div>
+      <p class="mtext">Photometric alignment is fragile on thermal images. GE-KLT combines KLT tracking, which uses local patch appearance, with
+        high-confidence Canny edges, and filters the results in three stages. Step through the pipeline below; the full-frame examples come
+        from the Multi-spectral dataset.</p>
+
+      <div class="card stepper" id="stepper">
+        <ol class="steps" role="tablist" aria-label="GE-KLT steps">
+          <li><button role="tab" aria-selected="true" data-step="0"><span class="sn">1</span><span><span class="st">Edge-KLT tracking</span><span class="sd">rendered → GT via KLT</span></span><span class="bar"></span></button></li>
+          <li><button role="tab" aria-selected="false" data-step="1"><span class="sn">2</span><span><span class="st">Nearest-neighbor matching</span><span class="sd">snap to GT Canny edges</span></span><span class="bar"></span></button></li>
+          <li><button role="tab" aria-selected="false" data-step="2"><span class="sn">3</span><span><span class="st">Rendered ↔ GT pairs</span><span class="sd">final edge matches</span></span><span class="bar"></span></button></li>
+          <li><button role="tab" aria-selected="false" data-step="3"><span class="sn">4</span><span><span class="st">Dual-constraint rejection</span><span class="sd">distance + gradient</span></span><span class="bar"></span></button></li>
+          <li><button role="tab" aria-selected="false" data-step="4"><span class="sn">5</span><span><span class="st">Robust pose tracking</span><span class="sd">GE-KLT + depth loss</span></span><span class="bar"></span></button></li>
+        </ol>
+        <div class="stage" role="tabpanel">
+          <div class="stage-media" id="stageMedia">
+            <figure><img id="stageImg" src="media/geklt_step1.webp" width="1280" height="480" alt=""><span class="badge">Rendered image</span><span class="badge r">GT image</span></figure>
+            <figure id="stageDiagWrap"><img id="stageDiag" src="media/geklt_diag1.webp" alt=""></figure>
+          </div>
+          <div class="stage-text" id="stageText"></div>
+          <div class="stage-ctl">
+            <button class="iconbtn" id="stepPrev" aria-label="Previous step">← Prev</button>
+            <button class="iconbtn" id="stepPlay" aria-label="Autoplay steps">▶ Autoplay</button>
+            <button class="iconbtn" id="stepNext" aria-label="Next step">Next →</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 2 GE-KLT -->
-    <div class="method-block">
-      <div class="method-head">
-        <div class="method-num">2</div>
-        <h3>Gradient-aware Edge-KLT (GE-KLT) Tracking</h3>
+    <!-- 3. Edge-aware smoothness -->
+    <div id="m-smooth" class="reveal">
+      <div class="mhead"><div class="mnum">3</div><h3>Edge-aware smoothness loss for mapping<span class="where">Sec. IV-E · mapping</span></h3></div>
+      <p class="mtext">Standard smoothness losses also smooth away important geometric boundaries. Ours weights the smoothness term by
+        \(1-w_{\text{edge}}\): it smooths non-edge regions to suppress thermal radiance artifacts and keeps sharp boundaries in the rendered images.</p>
+      <div class="eqs">
+        <div class="eq"><small>edge-aware smoothness (Eq. 16)</small>\(L_{\text{e-smooth}}=\dfrac{1}{4M}\sum_{i,j}\big(|R_{i\pm1,j}-R_{i,j}|+|R_{i,j\pm1}-R_{i,j}|\big)\cdot\big(1-w_{\text{edge}}(i,j)\big)\)</div>
+        <div class="eq"><small>edge weight (Eq. 17)</small>\(w_{\text{edge}}(i,j)=\sigma\big(\alpha(|\nabla R_{i,j}|-\beta)\big)\)</div>
       </div>
-      <p>
-        Pure photometric alignment is fragile in thermal imagery. Our multi-stage matching pipeline combines KLT tracking (local patch
-        appearance) with high-confidence Canny edges through three sequential outlier-rejection stages: (1) distance-based filtering,
-        (2) dual-constraint matching that requires <em>both</em> spatial proximity and gradient-directional agreement, and (3) residual-based
-        rejection. This strictly anchors matches to true physical boundaries, dramatically improving pose-estimation robustness in
-        contrast-limited scenes.
-      </p>
-      <div class="figure">
-        <div class="imgwrap" style="max-width:680px;margin:0 auto">
-          <img src="images/method_GE-KLT_residual.png" alt="Illustration of the GE-KLT residual">
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="toolbar">
+            <span class="lbl">Drag to compare ↔</span>
+            <div class="seg" data-group="smooth">
+              <button aria-pressed="true" data-left="media/smooth_none.webp" data-name="No smoothness loss">No smoothness</button>
+              <button aria-pressed="false" data-left="media/smooth_naive.webp" data-name="Smoothness loss (ThermalGaussian)">ThermalGaussian smoothness</button>
+            </div>
+          </div>
+          <div class="compare" data-compare="smooth" style="--pos:50%">
+            <img src="media/smooth_edge.webp" width="640" height="480" loading="lazy" alt="Rendering with edge-aware smoothness loss (ours).">
+            <div class="top"><img src="media/smooth_none.webp" width="640" height="480" loading="lazy" alt="Rendering without smoothness loss."></div>
+            <span class="badge lab l" data-lab="left">No smoothness loss</span>
+            <span class="badge ours lab r">Edge-aware (Ours)</span>
+            <input type="range" min="0" max="100" value="50" aria-label="Comparison slider">
+            <span class="handle"></span>
+          </div>
+          <div class="cap">Without regularization, floaters and radiance noise remain. A plain smoothness loss (ThermalGaussian, ICLR 2025) blurs object boundaries. Ours keeps the boundaries and cleans up flat regions.</div>
         </div>
-        <figcaption class="cap">
-          <b>GE-KLT residual.</b> A rendered edge point (red) is KLT-tracked to a candidate (blue), then matched to the nearest valid
-          ground-truth Canny edge (green) under dual spatial + gradient constraints. The residual (magenta) couples spatial distance with
-          gradient angular difference — anchoring every match to a real edge.
-        </figcaption>
+
+        <div class="card widget" id="sigWidget">
+          <div>
+            <div class="toolbar" style="border-bottom:0"><span class="lbl">Interactive · edge weight vs. gradient</span></div>
+            <svg id="sigSvg" viewBox="0 0 460 300" role="img" aria-label="Plot of w_edge and smoothing weight versus gradient magnitude"></svg>
+          </div>
+          <div class="ctl">
+            <label>α · sensitivity <span id="aVal">8</span><input type="range" id="aIn" min="1" max="40" step="1" value="8"></label>
+            <label>β · threshold <span id="bVal">0.10</span><input type="range" id="bIn" min="0" max="0.5" step="0.01" value="0.10"></label>
+            <p class="read">At <b>|∇R| = 0</b> the smoothing weight is <b id="r0">–</b>; at <b>|∇R| = 0.5</b> it is <b id="r1">–</b>.</p>
+            <p class="read" style="font-size:.8rem">Paper values: α = 8, β = 0.1. Higher α makes the switch between "smooth" and "preserve" sharper; β sets where it happens.</p>
+            <button class="iconbtn reset" id="sigReset">Reset to paper values</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 3 Edge-aware smoothing -->
-    <div class="method-block">
-      <div class="method-head">
-        <div class="method-num">3</div>
-        <h3>Edge-aware Smoothness for Mapping</h3>
+    <!-- Rendering note -->
+    <div id="m-render" class="reveal">
+      <div class="mhead"><div class="mnum" style="background:var(--surface-2);box-shadow:none;border:1px solid var(--line-2)">+</div><h3>Physics-grounded rendering<span class="where">Sec. IV-D · rendering</span></h3></div>
+      <p class="mtext">To improve rendering fidelity without extra optimization overhead, we plug in the pre-trained Atmospheric Transmission Field
+        (ATF), which suppresses floating artifacts, and the Thermal Conduction Module (TCM), which sharpens blurred boundaries, both from Thermal3D-GS.</p>
+      <div class="eqs">
+        <div class="eq"><small>ATF (Eq. 14)</small>\(SH=SH_0\,e^{(\mu_{abs}+\mu_{sca})d}\)</div>
+        <div class="eq"><small>TCM (Eq. 15)</small>\(\dfrac{\partial u}{\partial t}=\alpha\Big(\dfrac{\partial^2u}{\partial x^2}+\dfrac{\partial^2u}{\partial y^2}\Big)\)</div>
       </div>
-      <p>
-        Standard smoothness losses oversmooth important geometric boundaries. Our edge-aware smoothness loss applies strong smoothing in
-        flat regions while strictly preserving sharp thermal discontinuities, enforcing natural thermal equilibrium. A sigmoid-weighted
-        edge term down-weights regularization exactly where strong radiance gradients occur, so the final 3DGS map stays crisp at object
-        boundaries and clean in homogeneous regions.
-      </p>
-      <div class="eq center">L<sub>e-smooth</sub> = (1 / 4M) · Σ<sub>i,j</sub> ( |R<sub>i+1,j</sub> − R<sub>i,j</sub>| + |R<sub>i,j+1</sub> − R<sub>i,j</sub>| ) · (1 − w<sub>edge</sub>(i, j))</div>
-      <div class="eq center">w<sub>edge</sub>(i, j) = σ( α(|∇R<sub>i,j</sub>| − β) ),&nbsp;&nbsp; σ(x) = 1 / (1 + e<sup>−x</sup>),&nbsp;&nbsp; α = 8,&nbsp; β = 0.1</div>
-      <p style="margin-top:18px">
-        Here R<sub>i,j</sub> is the rendered thermal radiance at pixel (i, j) after rescaling and M is the total pixel count; the sigmoid edge
-        weight w<sub>edge</sub> ≈ 0 in flat regions (strong smoothing) and ≈ 1 near strong edges (boundaries preserved). The final mapping loss
-        aggregates the photometric loss, our edge-aware smoothness loss, and isotropic regularization over keyframes k in the window W:
-      </p>
-      <div class="eq center">L<sub>mapping</sub> = Σ<sub>k∈W</sub> ( λ<sub>pho</sub> L<sup>k</sup><sub>pho</sub> + λ<sub>e-smooth</sub> L<sup>k</sup><sub>e-smooth</sub> ) + λ<sub>iso</sub> L<sub>iso</sub></div>
     </div>
   </div>
 </section>
 
 <!-- RESULTS -->
-<section id="results" class="alt">
-  <div class="wrap reveal">
-    <span class="eyebrow">Evaluation</span>
-    <h2 class="title">Superior tracking, competitive rendering</h2>
-    <div class="title-rule"></div>
+<section id="results">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">Evaluation</span>
+      <h2 class="title">Superior tracking, <em>competitive rendering</em></h2>
+      <p class="intro">We evaluate on the public <b style="color:var(--ink)">Multi-spectral dataset</b> (hardware-synchronized thermal + RGB-D, 120 Hz OptiTrack
+        ground truth; <em>Bright</em> = stable lighting, <em>Varying</em> = random light toggling) and on a <b style="color:var(--ink)">custom monocular thermal dataset</b>
+        captured with a DJI Mavic 3T thermal camera and OptiTrack ground truth.</p>
+    </div>
 
-    <!-- Tracking trajectories -->
-    <div class="figure">
-      <div class="imgwrap">
-        <img src="images/eval_multi_traj.png" alt="Trajectory comparison on the multi-spectral dataset">
+    <!-- Tracking chart -->
+    <h3 class="sub reveal">Camera tracking · Multi-spectral <span class="tag">Table I · ATE RMSE (m) ↓</span></h3>
+    <div class="card reveal">
+      <div class="toolbar">
+        <div class="legend"><span><i class="line" style="background:linear-gradient(90deg,#ff3d5a,#ff7a1a)"></i>Ours</span><span><i class="line" style="background:var(--bar)"></i>Baselines</span><span><i class="line" style="background:repeating-linear-gradient(135deg,transparent 0 3px,rgba(255,61,90,.7) 3px 5px)"></i>Fail</span></div>
+        <div class="seg" data-group="t1">
+          <button aria-pressed="true" data-cond="Varying">Varying illumination</button>
+          <button aria-pressed="false" data-cond="Bright">Bright</button>
+        </div>
       </div>
-      <figcaption class="cap">
-        <b>Trajectory accuracy.</b> Estimated trajectories on the multi-spectral dataset — <span style="color:#e11d48;font-weight:600">Ours</span>
-        vs. <span style="color:#2563eb;font-weight:600">MonoGS</span>, compared against <b>Ground Truth</b> (black). Red boxes highlight segments
-        where MonoGS drifts significantly, whereas PI-EAT-SLAM maintains accurate alignment.
-      </figcaption>
+      <div class="chart"><div class="cgrid" id="t1chart"></div></div>
+      <p class="chart-note" id="t1note"></p>
+    </div>
+    <details class="tbl reveal"><summary>Full Table I <span>ATE RMSE (m) on the Multi-spectral dataset</span></summary><div class="tablewrap" id="t1"></div>
+      <div class="tnote"><span class="k1">Highlighted</span> = best, <span class="k2">underline</span> = second best, lower is better. Sequence names: ds = desk, ps = person, hfsp = halfsphere, ic = illumination changes.</div></details>
+
+    <div class="grid-2 reveal" style="margin-top:20px">
+      <figure class="card">
+        <div class="paper"><img class="zoom" src="media/fig6_trajectories.webp" width="1600" height="1415" loading="lazy" alt="Trajectory comparison of PI-EAT-SLAM, MonoGS and ground truth on four multi-spectral sequences."></div>
+        <figcaption class="cap"><b>Trajectories (Fig. 6).</b> <span style="color:#ff6b6b">Ours</span> vs. <span style="color:#7aa2ff">MonoGS</span> vs. ground truth (black) on desk1-halfsphere, desk2-xyz-ic, desk1-xyz-ic-person and desk1-halfsphere-ic. Red boxes mark where MonoGS drifts.</figcaption>
+      </figure>
+      <figure class="card">
+        <img class="zoom" src="media/tracking_getklt.webp" width="1152" height="648" loading="lazy" alt="Camera tracking visualization with rendered frame, GT frame and matched edges (×20).">
+        <figcaption class="cap"><b>Edge-based camera tracking (×20).</b> PI-EAT-SLAM tracks without failure in visually degraded scenes. Right column: rendered frame, GT frame and matched edges.</figcaption>
+      </figure>
     </div>
 
-    <!-- Edge matching quality -->
-    <div class="figure">
-      <div class="imgwrap tight">
-        <img src="images/eval_E_KLT.png" alt="GE-KLT vs E-KLT matching comparison">
+    <!-- NVS multi-spectral -->
+    <h3 class="sub reveal">Rendering · Multi-spectral <span class="tag">Fig. 7 · Table II</span></h3>
+    <div class="grid-2 wide-left reveal">
+      <div class="card">
+        <div class="toolbar">
+          <span class="lbl">MonoGS ↔ Ours <button class="iconbtn" data-zoom-src="media/fig7_nvs_multispectral.webp" style="margin-left:8px">⤢ Full Fig. 7</button></span>
+          <div class="seg" data-group="ms">
+            <button aria-pressed="true" data-l="media/ms_ds1-hfsp-ic_monogs.webp" data-r="media/ms_ds1-hfsp-ic_ours.webp">desk1-halfsphere-ic</button>
+            <button aria-pressed="false" data-l="media/ms_ds1-xyz-ps_monogs.webp" data-r="media/ms_ds1-xyz-ps_ours.webp">desk1-xyz-person</button>
+          </div>
+        </div>
+        <div class="compare" data-compare="ms" style="--pos:50%">
+          <img src="media/ms_ds1-hfsp-ic_ours.webp" width="471" height="301" loading="lazy" alt="Ours rendering.">
+          <div class="top"><img src="media/ms_ds1-hfsp-ic_monogs.webp" width="471" height="301" loading="lazy" alt="MonoGS rendering."></div>
+          <span class="badge lab l">MonoGS</span><span class="badge ours lab r">Ours</span>
+          <input type="range" min="0" max="100" value="50" aria-label="Comparison slider">
+          <span class="handle"></span>
+        </div>
       </div>
-      <figcaption class="cap">
-        <b>Edge-matching quality.</b> GE-KLT (left) vs. plain E-KLT (right). By explicitly anchoring matches to valid ground-truth edge
-        points (orange boxes), GE-KLT suppresses erroneous matches and prevents tracked points from drifting away from real physical
-        boundaries — yielding highly consistent residual vectors.
-      </figcaption>
-    </div>
-
-    <!-- Tracking table: Multi-spectral dataset (full) -->
-    <div class="tablewrap">
-      <table>
-        <caption>Camera Tracking Accuracy <span class="legend-mark">— ATE RMSE (m) on the Multi-spectral Dataset. <b class="best">Bold</b> = best, <span class="second">underline</span> = second best.</span></caption>
-        <thead>
-          <tr>
-            <th>Sequence</th><th>ORB2 (RGB-D)</th><th>ORB2 (Thermal-D)</th>
-            <th>MonoGS (Thermal-D)</th><th>Thermal-D Odom</th><th>Ours</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="grp"><td colspan="6">Bright</td></tr>
-          <tr><td>ds1-xyz</td><td class="best">0.0119</td><td>0.0832</td><td>0.0641</td><td>0.0719</td><td class="second">0.0541</td></tr>
-          <tr><td>ds1-xyz-ps</td><td>0.0402</td><td>0.1412</td><td>0.0419</td><td class="best">0.0154</td><td class="second">0.0314</td></tr>
-          <tr><td>ds1-hfsp</td><td>0.1061</td><td>0.4416</td><td>0.0959</td><td class="second">0.0582</td><td class="best">0.0485</td></tr>
-          <tr><td>ds2-xyz</td><td class="second">0.0618</td><td>Fail</td><td>Fail</td><td class="best">0.0375</td><td>0.0865</td></tr>
-          <tr><td>ds2-hfsp</td><td class="second">0.0759</td><td>0.1525</td><td>0.1536</td><td class="best">0.0288</td><td>0.1435</td></tr>
-          <tr class="grp"><td colspan="6">Varying (illumination changes)</td></tr>
-          <tr><td>ds1-xyz-ic</td><td>Fail</td><td>0.2502</td><td class="second">0.0815</td><td>0.1151</td><td class="best">0.0553</td></tr>
-          <tr><td>ds1-xyz-ic-ps</td><td>Fail</td><td>0.3490</td><td class="second">0.0609</td><td>0.0778</td><td class="best">0.0520</td></tr>
-          <tr><td>ds1-hfsp-ic</td><td>Fail</td><td>0.4674</td><td>0.0797</td><td class="second">0.0514</td><td class="best">0.0452</td></tr>
-          <tr><td>ds2-xyz-ic</td><td>Fail</td><td>0.2032</td><td>0.1705</td><td class="second">0.1136</td><td class="best">0.0840</td></tr>
-          <tr><td>ds2-hfsp-ic</td><td>Fail</td><td>0.1889</td><td class="second">0.0988</td><td>0.1099</td><td class="best">0.0626</td></tr>
-        </tbody>
-      </table>
-      <div class="tnote">Lower is better. RGB-D ORB-SLAM2 fails on every <em>Varying</em> sequence, while PI-EAT-SLAM (Ours) leads across all of them and stays competitive under <em>Bright</em> conditions.</div>
-    </div>
-
-    <!-- Rendering / NVS (qualitative) -->
-    <div class="figure">
-      <div class="imgwrap tight">
-        <img src="images/eval_rendering_M09.png" alt="Novel view synthesis comparison">
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center;padding:22px">
+        <p class="body" style="font-size:.96rem">MonoGS <b style="color:var(--ink)">blurs edges</b> and loses local detail such as the laptop keypad and the person's hair (red boxes). Ours keeps sharp structural boundaries and fine geometric detail.</p>
+        <p class="body" style="font-size:.9rem;margin-top:12px;color:var(--muted)">On PSNR/SSIM/LPIPS, MonoGS scores higher on most sequences because it directly minimizes photometric loss, while our preprocessing deliberately changes intensity distributions to favor tracking. That trade-off is what lets us track on dark <em>ds2-xyz</em>, where MonoGS fails to initialize.</p>
       </div>
-      <figcaption class="cap">
-        <b>Novel-view synthesis.</b> From left to right: Ground Truth, MonoGS, and Ours. MonoGS blurs object boundaries (red boxes) and
-        produces ghosting/black artifacts in flat regions (orange boxes), whereas our edge-aware mapping preserves sharp structures and
-        renders clean, artifact-free surfaces.
-      </figcaption>
+    </div>
+    <details class="tbl reveal"><summary>Table II <span>Novel view synthesis on the Multi-spectral dataset</span></summary><div class="tablewrap" id="t2"></div>
+      <div class="tnote"><span class="k1">Highlighted</span> = best. Thermal SLAM-NeRF is not open-source; its PSNR values are taken from its paper ("–" = not reported).</div></details>
+
+    <!-- Custom dataset -->
+    <h3 class="sub reveal">Custom monocular thermal dataset <span class="tag">Fig. 8 · Tables III & IV</span></h3>
+    <p class="body reveal" style="margin-bottom:18px">Sequences are <em>Easy</em> (translation-dominant, feature-rich) or <em>Difficult</em> (rotation-dominant, feature-sparse).
+      PI-EAT-SLAM targets thermal-depth input. With no open-source thermal-depth baselines available, we run it <b style="color:var(--ink)">monocular</b> here,
+      which is harder for it, and compare against TI-SLAM (without IMU), MonoGS, HI-SLAM2 and ORB-SLAM3.</p>
+    <div class="card reveal">
+      <div class="toolbar">
+        <div class="seg" data-group="nvsSeq">
+          <button aria-pressed="true" data-seq="xyz">xyz</button>
+          <button aria-pressed="false" data-seq="sfm">sfm</button>
+          <button aria-pressed="false" data-seq="circle">circle</button>
+        </div>
+        <div class="seg" data-group="nvsBase">
+          <button aria-pressed="true" data-base="monogs">vs. MonoGS</button>
+          <button aria-pressed="false" data-base="hislam2">vs. HI-SLAM2</button>
+        </div>
+      </div>
+      <div class="nvs-grid">
+        <figure class="nvs-gt">
+          <img id="nvsGt" src="media/nvs_xyz_gt.webp" width="435" height="348" loading="lazy" alt="Ground-truth view; red box marks the zoomed region.">
+          <span class="badge" style="position:absolute;top:12px;left:12px">GT (red box = zoom region)</span>
+        </figure>
+        <div class="compare" data-compare="nvs" style="--pos:50%">
+          <img id="nvsR" src="media/nvs_xyz_ours.webp" width="437" height="348" loading="lazy" alt="Ours rendering (zoomed).">
+          <div class="top"><img id="nvsL" src="media/nvs_xyz_monogs.webp" width="437" height="348" loading="lazy" alt="Baseline rendering (zoomed)."></div>
+          <span class="badge lab l" id="nvsLab">MonoGS</span><span class="badge ours lab r">Ours</span>
+          <input type="range" min="0" max="100" value="50" aria-label="Comparison slider">
+          <span class="handle"></span>
+        </div>
+      </div>
+      <div class="cap" id="nvsCap"></div>
     </div>
 
-    <!-- NVS table: Custom dataset (full) -->
-    <div class="tablewrap">
-      <table>
-        <caption>Novel View Synthesis <span class="legend-mark">— Custom Dataset (Monocular). <b class="best">Bold</b> = best, <span class="second">underline</span> = second best.</span></caption>
-        <thead>
-          <tr>
-            <th rowspan="2">Method</th><th rowspan="2">Metric</th>
-            <th colspan="3" class="gcol">Easy</th><th colspan="3" class="gcol">Difficult</th>
-          </tr>
-          <tr>
-            <th class="gcol">xyz</th><th>sfm</th><th>circle</th>
-            <th class="gcol">upper_turn</th><th>down_turn</th><th>up_down</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td class="method" rowspan="3">MonoGS</td><td class="metric">PSNR &uarr;</td><td class="gcol best">25.54</td><td class="second">27.22</td><td>21.81</td><td class="gcol">15.31</td><td>11.36</td><td>12.66</td></tr>
-          <tr><td class="metric">SSIM &uarr;</td><td class="gcol second">0.941</td><td class="second">0.943</td><td>0.876</td><td class="gcol">0.528</td><td>0.268</td><td>0.284</td></tr>
-          <tr><td class="metric">LPIPS &darr;</td><td class="gcol second">0.179</td><td class="second">0.145</td><td class="second">0.207</td><td class="gcol">0.540</td><td>0.690</td><td>0.656</td></tr>
+    <div class="reveal">
+      <details class="tbl" open><summary>Table III <span>ATE RMSE (m), monocular</span></summary><div class="tablewrap" id="t3"></div>
+        <div class="tnote"><span class="k1">Highlighted</span> = best, <span class="k2">underline</span> = second best. ORB-SLAM3 fails on every Difficult sequence; ours is best or second best on all six.</div></details>
+      <details class="tbl" open><summary>Table IV <span>NVS, monocular</span></summary><div class="tablewrap" id="t4"></div>
+        <div class="tnote">PSNR/SSIM ↑, LPIPS ↓. Ours leads on almost all Easy sequences and on upper turn.</div></details>
+    </div>
 
-          <tr><td class="method" rowspan="3">HI-SLAM2</td><td class="metric">PSNR &uarr;</td><td class="gcol">23.66</td><td>24.41</td><td class="second">22.36</td><td class="gcol second">19.43</td><td class="best">18.54</td><td class="best">20.10</td></tr>
-          <tr><td class="metric">SSIM &uarr;</td><td class="gcol">0.916</td><td>0.895</td><td class="second">0.885</td><td class="gcol second">0.855</td><td class="best">0.846</td><td class="best">0.865</td></tr>
-          <tr><td class="metric">LPIPS &darr;</td><td class="gcol">0.193</td><td>0.196</td><td class="second">0.207</td><td class="gcol second">0.464</td><td class="best">0.467</td><td class="best">0.400</td></tr>
-
-          <tr class="ours"><td class="method" rowspan="3">Ours (Mono)</td><td class="metric">PSNR &uarr;</td><td class="gcol second">25.42</td><td class="best">27.29</td><td class="best">23.73</td><td class="gcol best">20.82</td><td class="second">11.85</td><td class="second">15.26</td></tr>
-          <tr class="ours"><td class="metric">SSIM &uarr;</td><td class="gcol best">0.944</td><td class="best">0.944</td><td class="best">0.920</td><td class="gcol best">0.870</td><td class="second">0.326</td><td class="second">0.436</td></tr>
-          <tr class="ours"><td class="metric">LPIPS &darr;</td><td class="gcol best">0.168</td><td class="best">0.141</td><td class="best">0.158</td><td class="gcol best">0.378</td><td class="second">0.661</td><td class="second">0.574</td></tr>
-        </tbody>
-      </table>
-      <div class="tnote">PSNR/SSIM higher is better, LPIPS lower is better. Our preprocessing intentionally alters intensity distributions to prioritize tracking, yet PI-EAT-SLAM still tops NVS quality on most <em>Easy</em> sequences and the <em>upper_turn</em> case, remaining competitive on the hardest rotational trajectories.</div>
+    <!-- Edge matching -->
+    <h3 class="sub reveal">Why GE-KLT matches better <span class="tag">Fig. 9 · Fig. 10</span></h3>
+    <div class="grid-2 reveal">
+      <figure class="card">
+        <div class="paper"><img class="zoom" src="media/fig9_edge_divergence.webp" width="927" height="380" loading="lazy" alt="Edge-divergence residual vs GE-KLT matching on leaf and hair regions."></div>
+        <figcaption class="cap"><b>(a) Edge-divergence residual vs. (b) GE-KLT.</b> Spatial proximity + gradient direction alone ignores local patch appearance. In dense edge regions (leaves, hair) it produces wrong matches and inconsistent residual directions. GE-KLT's residuals are consistent.</figcaption>
+      </figure>
+      <figure class="card">
+        <div class="paper"><img class="zoom" src="media/fig10_eklt.webp" width="1600" height="727" loading="lazy" alt="GE-KLT vs E-KLT matches; E-KLT matches drift off boundaries."></div>
+        <figcaption class="cap"><b>(a) GE-KLT vs. (b) E-KLT.</b> Without geometric constraints, E-KLT lets matches drift away from physical boundaries (orange boxes). GE-KLT anchors every final match to a detected GT edge point.</figcaption>
+      </figure>
     </div>
   </div>
 </section>
 
-<!-- BIBTEX -->
-<section id="bibtex">
+<!-- ABLATION -->
+<section id="ablation" class="band">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow">Ablation & runtime</span>
+      <h2 class="title">Every component <em>pulls its weight</em></h2>
+      <p class="intro">Removing any component increases tracking error. Removing GE-KLT hurts most.</p>
+    </div>
+    <div class="grid-2 wide-left reveal" style="margin-top:28px;align-items:start">
+      <div class="card">
+        <div class="toolbar">
+          <span class="lbl">Table V · ATE RMSE (m) ↓</span>
+          <div class="seg" data-group="abl">
+            <button aria-pressed="true" data-col="3">Average</button>
+            <button aria-pressed="false" data-col="0">ds1-xyz-ps</button>
+            <button aria-pressed="false" data-col="1">ds1-hfsp</button>
+            <button aria-pressed="false" data-col="2">ds2-xyz-ic</button>
+          </div>
+        </div>
+        <div class="chart" id="ablChart"></div>
+        <p class="chart-note">The percentage is the error increase relative to the full system. Sequences were chosen for varied trajectories (xyz, hfsp), a person in view (ps) and aggressive illumination changes (ic).</p>
+      </div>
+      <div class="card">
+        <div class="toolbar"><span class="lbl">Runtime per frame · RTX 3060</span><span class="badge">≈ 1540 ms · 0.65 FPS</span></div>
+        <div class="chart" id="rtChart"></div>
+        <p class="chart-note">Average processing time per component (Sec. V-E). Future work: loop closure for large-scale consistency and real-time onboard execution.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CITATION -->
+<section id="citation">
   <div class="wrap reveal">
     <span class="eyebrow">Citation</span>
     <h2 class="title">BibTeX</h2>
-    <div class="title-rule"></div>
-    <div class="bibtex">
-      <div class="bibtex-head">
-        <span>cite this work</span>
-        <button class="copybtn" id="copyBib">Copy</button>
-      </div>
-<pre id="bibText"><span class="k">@inproceedings</span>{pieatslam2026,
-  <span class="k">title</span>     = {<span class="v">PI-EAT-SLAM: Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM</span>},
+    <div class="bib">
+      <div class="bib-head"><span>IROS 2026 · pp. 6729–6736</span><button class="iconbtn" id="copyBib">Copy</button></div>
+<pre id="bibText"><span class="k">@inproceedings</span>{kim2026pieatslam,
+  <span class="k">title</span>     = {<span class="v">{PI-EAT-SLAM}: Physics-Informed Edge-Aware Thermal Gaussian Splatting {SLAM}</span>},
   <span class="k">author</span>    = {<span class="v">Kim, Junpyo and Yeom, Seonwook and Yang, Seonmo and Ham, Jungil and Shin, Hyeonji and Kim, Changhyeon and Lee, Hyeonbeom and Kim, Pyojin</span>},
   <span class="k">booktitle</span> = {<span class="v">IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)</span>},
+  <span class="k">pages</span>     = {<span class="v">6729--6736</span>},
   <span class="k">year</span>      = {<span class="v">2026</span>}
 }</pre>
     </div>
+    <p class="body" style="margin-top:22px;font-size:.84rem;color:var(--muted)">Acknowledgements: this work was supported by the National Research Foundation of Korea (NRF) grant funded by the Korea government (MSIT) (No. RS-2024-00358374) and the Global University Project grant funded by GIST in 2025.</p>
   </div>
 </section>
 
-<!-- FOOTER -->
 <footer>
-  <div class="fbrand">🔥 PI-EAT-SLAM</div>
+  <div class="fb">PI-EAT-SLAM</div>
   <p>Physics-Informed Edge-Aware Thermal Gaussian Splatting SLAM · IROS 2026</p>
-  <p class="small">Page built from the paper. &nbsp;·&nbsp; <a href="https://github.com/pi-eat-slam/PI-EAT-SLAM" target="_blank" rel="noopener noreferrer">GitHub Repository</a></p>
+  <p><a href="paper.pdf" target="_blank" rel="noopener noreferrer">Paper (PDF)</a> · <a href="https://github.com/pi-eat-slam/PI-EAT-SLAM" target="_blank" rel="noopener noreferrer">GitHub repository</a></p>
 </footer>
 
-<!-- LIGHTBOX -->
-<div class="lb" id="lb"><img id="lbImg" src="" alt="enlarged figure"></div>
+<div class="lb" id="lb" role="dialog" aria-label="Enlarged figure"><button class="x" aria-label="Close">×</button><img id="lbImg" src="" alt=""></div>
+<div class="tip" id="tip"></div>
 
 <script>
-// reveal on scroll
-const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
-document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// lightbox
-const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
-document.querySelectorAll('.figure img, .teaser img').forEach(img=>{
-  img.addEventListener('click',()=>{lbImg.src=img.src;lb.classList.add('open')});
+/* ---------- math ---------- */
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.renderMathInElement) renderMathInElement(document.body, {delimiters:[{left:'\\(',right:'\\)',display:false}], throwOnError:false});
 });
-lb.addEventListener('click',()=>lb.classList.remove('open'));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')lb.classList.remove('open')});
 
-// copy bibtex
-document.getElementById('copyBib').addEventListener('click',function(){
-  const t=document.getElementById('bibText').innerText;
-  navigator.clipboard.writeText(t).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1600)});
+/* ---------- reveal + count-up ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add('in'); io.unobserve(e.target);
+  $$('[data-count]', e.target).forEach(countUp);
+}), {threshold:.12});
+$$('.reveal').forEach(el => io.observe(el));
+function countUp(el){
+  const end = +el.dataset.count, pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
+  if (reduce) return;
+  const t0 = performance.now(), dur = 1100;
+  const step = t => { const k = Math.min(1,(t-t0)/dur), v = Math.round(end*(1-Math.pow(1-k,3)));
+    el.textContent = pre + v + suf; if (k<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+/* ---------- nav progress + active link ---------- */
+const prog = $('#progress'), links = $$('.nav-links a');
+const secs = links.map(a => $(a.getAttribute('href')));
+function onScroll(){
+  const h = document.documentElement, p = h.scrollTop/(h.scrollHeight-h.clientHeight);
+  prog.style.width = (p*100).toFixed(2)+'%';
+  let cur = -1; secs.forEach((s,i) => { if (s && s.getBoundingClientRect().top < 120) cur = i; });
+  links.forEach((a,i) => a.classList.toggle('active', i===cur));
+}
+addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+/* ---------- lightbox ---------- */
+const lb = $('#lb'), lbImg = $('#lbImg');
+function openLB(src, alt){ lbImg.src = src; lbImg.alt = alt || ''; lb.classList.add('open'); }
+document.addEventListener('click', e => {
+  const z = e.target.closest('img.zoom, #demoImg'); if (z) return openLB(z.currentSrc || z.src, z.alt);
+  const b = e.target.closest('[data-zoom-target]'); if (b){ const i = document.getElementById(b.dataset.zoomTarget); openLB(i.src, i.alt); }
+  const zs = e.target.closest('[data-zoom-src]'); if (zs) openLB(zs.dataset.zoomSrc, zs.textContent.trim());
 });
+lb.addEventListener('click', () => lb.classList.remove('open'));
+addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open'); });
+
+/* ---------- segmented controls ---------- */
+function seg(group, fn){
+  const box = $(`.seg[data-group="${group}"]`); if (!box) return;
+  const bs = $$('button', box);
+  bs.forEach(b => b.addEventListener('click', () => { bs.forEach(x => x.setAttribute('aria-pressed', x===b)); fn(b); }));
+}
+function stackShow(name, i){ $$(`[data-stack="${name}"] img`).forEach((im,k) => im.classList.toggle('on', k===i)); }
+
+const siftV = [
+  ['good','✓','<b>RGB:</b> dense texture gives many point matches.'],
+  ['bad','✕','<b>Thermal:</b> the same frames in thermal give only a handful of SIFT matches, so point-feature tracking has almost nothing to work with.']];
+seg('sift', b => { const i=+b.dataset.show; stackShow('sift', i); setVerdict('sift', siftV[i]); });
+
+const sbV = [
+  ['bad','✕','<b>Original:</b> inherent low contrast, so very few matches.'],
+  ['bad','✕','<b>Min-max scaling:</b> linear rescaling does not reflect thermal characteristics and gives numerous incorrect correspondences.'],
+  ['bad','✕','<b>FieldScale (RA-L 2024):</b> raises contrast a lot but amplifies sensor noise, producing widespread false matches.'],
+  ['good','✓','<b>S-B rescaling (ours):</b> boosts contrast without amplifying noise, giving accurate matches along physical boundaries.']];
+seg('sb', b => { const i=+b.dataset.show; stackShow('sb', i); setVerdict('sb', sbV[i]); });
+function setVerdict(name, [cls, ic, html]){
+  const v = $(`[data-verdict="${name}"]`); v.innerHTML = `<span class="ic ${cls}">${ic}</span><p>${html}</p>`;
+}
+
+/* ---------- compare sliders ---------- */
+$$('.compare').forEach(c => {
+  const r = $('input[type=range]', c);
+  r.addEventListener('input', () => c.style.setProperty('--pos', r.value+'%'));
+});
+seg('smooth', b => {
+  const c = $('[data-compare="smooth"]');
+  $('.top img', c).src = b.dataset.left; $('[data-lab="left"]', c).textContent = b.dataset.name;
+});
+seg('ms', b => {
+  const c = $('[data-compare="ms"]');
+  $('.top img', c).src = b.dataset.l; $(':scope > img', c).src = b.dataset.r;
+});
+
+/* NVS custom */
+const nvsCaps = {
+  xyz:'<b>xyz.</b> MonoGS and HI-SLAM2 blur the boundaries of the chair (orange boxes).',
+  sfm:'<b>sfm.</b> Both baselines blur around the chair, and MonoGS adds severe black artifacts on the sofa.',
+  circle:'<b>circle.</b> HI-SLAM2 loses the wire details and both baselines distort the structures under the desk. Ours keeps sharp details.'};
+const nvs = {seq:'xyz', base:'monogs'};
+function nvsUpdate(){
+  $('#nvsGt').src = `media/nvs_${nvs.seq}_gt.webp`;
+  $('#nvsR').src = `media/nvs_${nvs.seq}_ours.webp`;
+  $('#nvsL').src = `media/nvs_${nvs.seq}_${nvs.base}.webp`;
+  $('#nvsLab').textContent = nvs.base==='monogs' ? 'MonoGS' : 'HI-SLAM2';
+  $('#nvsCap').innerHTML = nvsCaps[nvs.seq] + ' <span style="opacity:.7">Drag the handle to compare with Ours.</span> <button class="iconbtn" data-zoom-src="media/fig8_nvs_custom.webp" style="margin-left:6px">⤢ Full Fig. 8</button>';
+}
+seg('nvsSeq', b => { nvs.seq = b.dataset.seq; nvsUpdate(); });
+seg('nvsBase', b => { nvs.base = b.dataset.base; nvsUpdate(); });
+nvsUpdate();
+
+/* ---------- pipeline hotspots ---------- */
+const pipeData = {
+  sb:['1 · S-B rescaling','Raw thermal → temperature → radiance (L ∝ T⁴) → 8-bit, followed by CLAHE + bilateral filtering. Paired with the depth frame.','#m-sb'],
+  track:['2 · Tracking','GE-KLT matching: KLT-tracked Canny edges, nearest-edge matching and dual-constraint outlier rejection, plus an L1 depth loss.','#m-geklt'],
+  map3d:['3 · 3D Gaussian map','Scene represented by anisotropic 3D Gaussians with thermal radiance features, rendered by α-blending.',null],
+  kf:['4 · Keyframing','Co-visibility check, keyframe selection and Gaussian insertion / pruning, following MonoGS.',null],
+  render:['5 · Physics-grounded rendering','Pre-trained Atmospheric Transmission Field (ATF) against floaters and a Thermal Conduction Module (TCM) for sharper edges.','#m-render'],
+  mapping:['6 · Mapping','Photometric loss + edge-aware smoothness + isotropic regularization over the keyframe window, then keyframe management.','#m-smooth']};
+const pinfo = $('#pipeInfo');
+$$('.hot').forEach(h => {
+  const show = () => {
+    $$('.hot').forEach(x => x.classList.toggle('on', x===h));
+    const [t, d, link] = pipeData[h.dataset.k];
+    pinfo.innerHTML = `<span class="k">Fig. 2</span><div><h4>${t}</h4><p>${d}</p>${link ? `<a href="${link}">Go to details →</a>` : ''}</div>`;
+  };
+  h.addEventListener('mouseenter', show); h.addEventListener('focus', show);
+  h.addEventListener('click', show);
+});
+
+/* ---------- GE-KLT stepper ---------- */
+const steps = [
+  {img:'media/geklt_step1.webp', diag:'media/geklt_diag1.webp', t:'1 · Edge-KLT tracking',
+   p:'Canny edge points \\(p^{rend}_i\\) from the rendered image are tracked into the GT frame with KLT, which uses local patch appearance. A track is kept only if it moves less than \\(\\tau_{dist}=25\\) px.',
+   eq:'\\(\\lVert p^{track}_i-p^{rend}_i\\rVert<\\tau_{dist}\\)', lg:[['#ff4d5e','KLT tracks (rendered → GT)']]},
+  {img:'media/geklt_step2.webp', diag:'media/geklt_diag2.webp', t:'2 · Nearest-neighbor edge matching',
+   p:'Each tracked point is matched to its nearest Canny edge point \\(p^{gt}_i\\) in the GT frame, which anchors it to a real physical boundary instead of wherever KLT drifted.',
+   eq:'', lg:[['#3dd66b','GT Canny edges'],['#4d7dff','KLT-tracked points']]},
+  {img:'media/geklt_step3.webp', diag:'media/geklt_diag3.webp', t:'3 · Final rendered ↔ GT correspondences',
+   p:'The two stages combined give direct rendered-to-GT edge pairs (magenta). The residual couples spatial distance with the angle between the normalized Sobel gradients.',
+   eq:'\\(r_i=\\lVert p^{gt}_i-p^{rend}_i\\rVert\\cdot\\arccos\\!\\big(\\mathbf n(p^{rend}_i)\\cdot\\mathbf n(p^{gt}_i)\\big)\\)', lg:[['#ff40ff','final matches']]},
+  {img:'media/geklt_step4.webp', diag:'media/geklt_diag4.webp', t:'4 · Dual-constraint outlier rejection',
+   p:'A match is accepted only if it passes <b>both</b> a spatial and a gradient-direction test (τ<sub>dist</sub> = 25 px, τ<sub>angle</sub> = 45°). Matches whose edges point in different directions are discarded.',
+   eq:'\\(\\lVert p^{gt}_i-p^{track}_i\\rVert<\\tau_{dist},\\quad \\theta_i=\\arccos(\\mathbf n^{track}_i\\cdot\\mathbf n^{gt}_i)<\\tau_{angle}\\)', lg:[['#ff40ff','surviving inliers']]},
+  {img:'media/tracking_getklt.webp', diag:null, t:'5 · Robust edge-based pose tracking',
+   p:'Inlier residuals form the GE-KLT loss, which is combined with an L1 depth loss on valid pixels to optimize the camera pose. Result: tracking without failure in visually degraded scenes (×20).',
+   eq:'\\(L_{GE\\text{-}KLT}=\\tfrac{1}{N_{inlier}}\\sum_{i\\in\\mathcal I}r_i^2,\\qquad L_{tracking}=\\lambda_{GE\\text{-}KLT}L_{GE\\text{-}KLT}+\\lambda_{geo}L_{geo}\\)', lg:[]}
+];
+let cur = 0, timer = null;
+const sBtns = $$('#stepper .steps button');
+// preload stills
+steps.forEach(s => { if (s.diag){ new Image().src = s.img; new Image().src = s.diag; } });
+function renderMath(el){ if (window.renderMathInElement) renderMathInElement(el, {delimiters:[{left:'\\(',right:'\\)',display:false}], throwOnError:false}); }
+function setStep(i){
+  cur = (i+steps.length)%steps.length; const s = steps[cur];
+  sBtns.forEach((b,k) => { b.setAttribute('aria-selected', k===cur); $('.bar', b).style.width = '0'; });
+  const media = $('#stageMedia');
+  media.classList.toggle('full', !s.diag);
+  $('#stageDiagWrap').style.display = s.diag ? '' : 'none';
+  $('#stageImg').src = s.img;
+  $('#stageImg').alt = s.t;
+  $$('#stageMedia .badge').forEach(b => b.style.display = s.diag ? '' : 'none');
+  if (s.diag){ $('#stageDiag').src = s.diag; $('#stageDiag').alt = s.t + ' diagram'; }
+  const lg = s.lg.map(([c,n]) => `<span><i class="line" style="background:${c}"></i>${n}</span>`).join('');
+  $('#stageText').innerHTML = `<h4>${s.t}</h4><p>${s.p}</p>${s.eq ? `<div class="eq">${s.eq}</div>` : ''}${lg ? `<div class="legend" style="margin-top:10px">${lg}</div>` : ''}`;
+  renderMath($('#stageText'));
+}
+sBtns.forEach(b => b.addEventListener('click', () => { stopPlay(); setStep(+b.dataset.step); }));
+$('#stepPrev').addEventListener('click', () => { stopPlay(); setStep(cur-1); });
+$('#stepNext').addEventListener('click', () => { stopPlay(); setStep(cur+1); });
+const DUR = 4200;
+function tickBar(){
+  const bar = $('.bar', sBtns[cur]), t0 = performance.now(), mine = cur;
+  const f = t => { if (!timer || cur!==mine) return; const k = Math.min(1,(t-t0)/DUR); bar.style.width = (k*100)+'%';
+    if (k<1) requestAnimationFrame(f); else { setStep(cur+1); tickBar(); } };
+  requestAnimationFrame(f);
+}
+function stopPlay(){ timer = null; $('#stepPlay').textContent = '▶ Autoplay'; sBtns.forEach(b => $('.bar', b).style.width='0'); }
+$('#stepPlay').addEventListener('click', () => {
+  if (timer){ stopPlay(); return; }
+  timer = true; $('#stepPlay').textContent = '❚❚ Pause'; tickBar();
+});
+document.addEventListener('DOMContentLoaded', () => setStep(cur));
+setStep(0);
+
+/* ---------- sigmoid widget ---------- */
+const svg = $('#sigSvg'), NS = 'http://www.w3.org/2000/svg';
+const W = 460, H = 300, P = {l:46, r:16, t:20, b:40}, XMAX = 1;
+const sx = x => P.l + x/XMAX*(W-P.l-P.r), sy = y => H-P.b - y*(H-P.t-P.b);
+function el(tag, at, txt){ const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (txt!=null) e.textContent = txt; svg.appendChild(e); return e; }
+function drawSig(){
+  const a = +$('#aIn').value, b = +$('#bIn').value;
+  $('#aVal').textContent = a; $('#bVal').textContent = b.toFixed(2);
+  svg.innerHTML = '';
+  for (let i=0;i<=4;i++){ const y = i/4; el('line',{x1:P.l,x2:W-P.r,y1:sy(y),y2:sy(y),stroke:'rgba(255,255,255,.08)'}); el('text',{x:P.l-8,y:sy(y)+4,'text-anchor':'end',fill:'#8d91ad','font-size':11,'font-family':'JetBrains Mono'},y.toFixed(2)); }
+  for (let i=0;i<=5;i++){ const x = i/5*XMAX; el('text',{x:sx(x),y:H-P.b+18,'text-anchor':'middle',fill:'#8d91ad','font-size':11,'font-family':'JetBrains Mono'},x.toFixed(1)); }
+  el('text',{x:(P.l+W-P.r)/2,y:H-6,'text-anchor':'middle',fill:'#c3c6dc','font-size':12},'|∇R|  (Sobel gradient magnitude)');
+  // beta marker
+  el('line',{x1:sx(b),x2:sx(b),y1:P.t,y2:H-P.b,stroke:'rgba(255,201,74,.55)','stroke-dasharray':'4 4'});
+  el('text',{x:sx(b)+5,y:P.t+10,fill:'#ffc94a','font-size':11,'font-family':'JetBrains Mono'},'β');
+  let d1='', d2='';
+  for (let i=0;i<=200;i++){ const x = i/200*XMAX, w = 1/(1+Math.exp(-a*(x-b)));
+    d1 += (i?'L':'M')+sx(x).toFixed(1)+' '+sy(w).toFixed(1); d2 += (i?'L':'M')+sx(x).toFixed(1)+' '+sy(1-w).toFixed(1); }
+  el('path',{d:d2,fill:'none',stroke:'#3dd6ff','stroke-width':2.5});
+  el('path',{d:d1,fill:'none',stroke:'#ff7a1a','stroke-width':2.5});
+  el('text',{x:W-P.r-4,y:sy(.93),'text-anchor':'end',fill:'#ff9d4d','font-size':12,'font-weight':700},'w_edge  → preserve');
+  el('text',{x:W-P.r-4,y:sy(.07)+12,'text-anchor':'end',fill:'#3dd6ff','font-size':12,'font-weight':700},'1 − w_edge  → smooth');
+  const f = x => 1-1/(1+Math.exp(-a*(x-b)));
+  $('#r0').textContent = f(0).toFixed(2); $('#r1').textContent = f(.5).toFixed(2);
+}
+$('#aIn').addEventListener('input', drawSig); $('#bIn').addEventListener('input', drawSig);
+$('#sigReset').addEventListener('click', () => { $('#aIn').value = 8; $('#bIn').value = .1; drawSig(); });
+drawSig();
+
+/* ---------- data (from the final paper) ---------- */
+const F = 'Fail';
+const T1 = {methods:['ORB-SLAM2 (RGB-D)','ORB-SLAM2 (Thermal-D)','MonoGS (Thermal-D)','Thermal-D Odom.','Ours'],
+  groups:{Bright:[
+    ['ds1-xyz',[.012,.083,.064,.072,.054]],['ds1-xyz-ps',[.040,.141,.042,.015,.031]],['ds1-hfsp',[.106,.442,.096,.058,.049]],
+    ['ds2-xyz',[.062,F,F,.038,.087]],['ds2-hfsp',[.076,.153,.154,.029,.144]]],
+  Varying:[
+    ['ds1-xyz-ic',[F,.250,.082,.115,.055]],['ds1-xyz-ic-ps',[F,.349,.061,.078,.052]],['ds1-hfsp-ic',[F,.467,.080,.051,.045]],
+    ['ds2-xyz-ic',[F,.203,.171,.114,.084]],['ds2-hfsp-ic',[F,.189,.099,.110,.063]]]}};
+const T3 = {methods:['ORB-SLAM3','MonoGS','HI-SLAM2','TI-SLAM (Mono)','Ours (Mono)'],
+  groups:{Easy:[['xyz',[.1081,.1339,.1816,.6278,.1270]],['sfm',[.1063,.0874,.1217,1.0422,.0870]],['circle',[.1187,.2917,.2117,1.0446,.1484]]],
+  Difficult:[['upper turn',[F,.9159,.8996,.9212,.8892]],['down turn',[F,.8313,.8241,.8530,.8234]],['up down',[F,1.1383,1.1874,1.2361,1.1852]]]}};
+const T2 = {groups:[['Bright',['ds1-xyz','ds1-xyz-ps','ds1-hfsp','ds2-xyz','ds2-hfsp']],['Varying',['ds1-xyz-ic','ds1-xyz-ic-ps','ds1-hfsp-ic','ds2-xyz-ic','ds2-hfsp-ic']]],
+  methods:[
+    ['MonoGS (Thermal-D)',{PSNR:[36.11,35.69,36.74,F,22.12,29.83,33.37,36.17,26.02,31.46],SSIM:[.922,.927,.946,F,.808,.813,.863,.942,.832,.878],LPIPS:[.180,.159,.202,F,.518,.293,.280,.222,.501,.474]}],
+    ['Thermal SLAM-NeRF (Mono)',{PSNR:[30.23,null,null,null,27.45,29.53,null,29.09,29.61,null],SSIM:Array(10).fill(null),LPIPS:Array(10).fill(null)}],
+    ['Ours',{PSNR:[29.85,28.73,31.26,21.75,22.06,28.18,26.12,32.84,24.66,27.77],SSIM:[.881,.889,.918,.795,.819,.783,.828,.920,.800,.847],LPIPS:[.277,.239,.248,.472,.572,.322,.396,.243,.561,.538]}]],
+  second:false};
+const T4 = {groups:[['Easy',['xyz','sfm','circle']],['Difficult',['upper turn','down turn','up down']]],
+  methods:[
+    ['MonoGS',{PSNR:[25.54,27.22,21.81,15.31,11.36,12.66],SSIM:[.941,.943,.876,.528,.268,.284],LPIPS:[.179,.145,.207,.540,.690,.656]}],
+    ['HI-SLAM2',{PSNR:[23.66,24.41,22.36,19.43,18.54,20.10],SSIM:[.916,.895,.885,.855,.846,.865],LPIPS:[.193,.196,.207,.464,.467,.400]}],
+    ['Ours (Mono)',{PSNR:[25.42,27.29,23.73,20.82,11.85,15.26],SSIM:[.944,.944,.920,.870,.326,.436],LPIPS:[.168,.141,.158,.378,.661,.574]}]],
+  second:true};
+const T5 = {cols:['ds1-xyz-ps','ds1-hfsp','ds2-xyz-ic','Avg.'], rows:[
+  ['w/o S-B rescaling',[.0431,.0653,.0861,.0648]],['w/o GE-KLT',[.0463,.0848,.1236,.0849]],['w/o ATF+TCM',[.0426,.0768,.0865,.0686]],
+  ['w/o e-smoothing',[.0436,.0611,.0893,.0647]],['Ours (full)',[.0314,.0485,.0840,.0540]]]};
+const RT = [['Thermal preprocessing',303.20],['GE-KLT tracking',742.42],['ATF + TCM',28.52],['Edge-aware smoothing',98.41],['GS mapping',367.82]];
+
+/* ranking helper: returns {best:set, second:set} of indices; lower=true for errors */
+function rank(vals, lower){
+  const ok = vals.map((v,i)=>[v,i]).filter(([v]) => typeof v === 'number');
+  ok.sort((a,b) => lower ? a[0]-b[0] : b[0]-a[0]);
+  const best = ok.length ? ok[0][0] : null;
+  const rest = ok.filter(([v]) => v!==best); const sec = rest.length ? rest[0][0] : null;
+  return i => vals[i]===best ? 'best' : (vals[i]===sec ? 'second' : '');
+}
+const fmt = (v,d) => v===F ? 'Fail' : (v==null ? '–' : v.toFixed(d));
+
+/* ATE tables (rows = sequences, cols = methods) */
+function ateTable(id, T, d){
+  const n = T.methods.length;
+  let h = '<table><thead><tr><th>Sequence</th>' + T.methods.map((m,i)=>`<th class="${i===n-1?'ours':''}">${m}</th>`).join('') + '</tr></thead><tbody>';
+  for (const [g, rows] of Object.entries(T.groups)){
+    h += `<tr class="grp"><td colspan="${n+1}">${g}</td></tr>`;
+    for (const [s, v] of rows){ const r = rank(v, true);
+      h += `<tr><td class="lbl">${s}</td>` + v.map((x,i)=>`<td class="${[r(i), x===F?'fail':'', i===n-1?'ours':''].join(' ')}">${fmt(x,d)}</td>`).join('') + '</tr>'; }
+  }
+  $('#'+id).innerHTML = h + '</tbody></table>';
+}
+ateTable('t1', T1, 3); ateTable('t3', T3, 4);
+
+/* NVS tables (method x metric rows, sequence cols) */
+function nvsTable(id, T){
+  const cols = T.groups.flatMap(g=>g[1]), dir = {PSNR:false, SSIM:false, LPIPS:true}, dg = {PSNR:2, SSIM:3, LPIPS:3};
+  let h = '<table><thead><tr><th rowspan="2">Method</th><th rowspan="2">Metric</th>' + T.groups.map(g=>`<th colspan="${g[1].length}">${g[0]}</th>`).join('') + '</tr><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+  const last = T.methods.length-1;
+  T.methods.forEach(([name, m], mi) => {
+    ['PSNR','SSIM','LPIPS'].forEach((k, ki) => {
+      h += `<tr class="${mi===last?'ours':''}">` + (ki===0 ? `<td class="lbl" rowspan="3">${name}</td>` : '') + `<td class="mt">${k} ${dir[k]?'↓':'↑'}</td>`;
+      cols.forEach((c, ci) => {
+        const col = T.methods.map(([,mm]) => mm[k][ci]); const r = rank(col, dir[k]); let cls = r(mi);
+        if (!T.second && cls==='second') cls = '';
+        const v = m[k][ci]; h += `<td class="${cls} ${v===F?'fail':''}">${fmt(v, dg[k])}</td>`;
+      });
+      h += '</tr>';
+    });
+  });
+  $('#'+id).innerHTML = h + '</tbody></table>';
+}
+nvsTable('t2', T2); nvsTable('t4', T4);
+
+/* ---------- bar charts ---------- */
+const tip = $('#tip');
+function bindTip(node, html){
+  node.addEventListener('mousemove', e => { tip.innerHTML = html; tip.style.opacity = 1;
+    tip.style.left = Math.min(e.clientX+14, innerWidth-270)+'px'; tip.style.top = (e.clientY+14)+'px'; });
+  node.addEventListener('mouseleave', () => tip.style.opacity = 0);
+}
+function barRow(name, v, max, opts){
+  const row = document.createElement('div'); row.className = 'crow';
+  const isF = v===F, w = isF ? 100 : Math.max(.8, v/max*100);
+  row.innerHTML = `<span class="nm ${opts.ours?'ours':''}" title="${name}">${name}</span><span class="track"><span class="b ${opts.ours?'ours':''} ${isF?'fail':''}" style="width:${w}%"></span></span><span class="v ${opts.best?'best':''}">${isF?'Fail':(opts.label||v.toFixed(opts.d))}${opts.best?' ★':''}</span>`;
+  bindTip(row, `${name}<br><b>${isF?'tracking failed':v.toFixed(opts.d)+(opts.unit||'')}</b>${opts.extra||''}`);
+  return row;
+}
+function drawT1(cond){
+  const box = $('#t1chart'); box.innerHTML = '';
+  const rows = T1.groups[cond]; const max = Math.max(...rows.flatMap(r=>r[1]).filter(v=>typeof v==='number'));
+  rows.forEach(([s, v]) => {
+    const g = document.createElement('div'); g.className = 'cgroup'; g.innerHTML = `<h5>${s}</h5>`;
+    const r = rank(v, true);
+    v.forEach((x,i) => g.appendChild(barRow(T1.methods[i], x, max, {d:3, unit:' m', ours:i===T1.methods.length-1, best:r(i)==='best'})));
+    box.appendChild(g);
+  });
+  $('#t1note').innerHTML = cond==='Varying'
+    ? '★ = lowest ATE. Under random light toggling, <b style="color:var(--ink)">Ours has the lowest error on all five sequences</b>. ORB-SLAM2 (RGB-D) fails on every one.'
+    : '★ = lowest ATE. Under stable lighting, Ours is best on ds1-hfsp and competitive elsewhere. MonoGS and ORB-SLAM2 (Thermal-D) fail on the dark ds2-xyz.';
+}
+seg('t1', b => drawT1(b.dataset.cond)); drawT1('Varying');
+
+function drawAbl(ci){
+  const box = $('#ablChart'); box.innerHTML = '';
+  const full = T5.rows[T5.rows.length-1][1][ci], max = Math.max(...T5.rows.map(r=>r[1][ci]));
+  const vals = T5.rows.map(r=>r[1][ci]); const r = rank(vals, true);
+  T5.rows.forEach(([n, v], i) => {
+    const x = v[ci], ours = i===T5.rows.length-1, inc = (x/full-1)*100;
+    box.appendChild(barRow(n, x, max, {d:4, unit:' m', ours, best:r(i)==='best',
+      extra: ours ? '' : `<br>+${inc.toFixed(0)}% vs. full system`}));
+    if (!ours){ const last = box.lastChild; last.querySelector('.v').innerHTML = `${x.toFixed(4)} <span style="color:#ff8a9a;font-size:.72rem">+${inc.toFixed(0)}%</span>`; }
+  });
+}
+seg('abl', b => drawAbl(+b.dataset.col)); drawAbl(3);
+
+(function drawRT(){
+  const box = $('#rtChart'), max = Math.max(...RT.map(r=>r[1])), tot = RT.reduce((a,r)=>a+r[1],0);
+  RT.forEach(([n, v]) => box.appendChild(barRow(n, v, max, {d:0, unit:' ms', label: v.toFixed(0)+' ms', extra:`<br>${(v/tot*100).toFixed(1)}% of frame time`})));
+})();
+
+/* ---------- copy bibtex ---------- */
+$('#copyBib').addEventListener('click', function(){
+  navigator.clipboard.writeText($('#bibText').innerText).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 1600); });
+});
+})();
 </script>
 </body>
 </html>
